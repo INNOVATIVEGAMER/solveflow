@@ -513,6 +513,19 @@ export default function Home() {
             </CardContent>
           </Card>
         </FadeIn>
+        <FadeIn delay={0.1}>
+          <div className="mt-6 flex justify-center">
+            <a
+              href="/demo/teacher"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/15 text-sm text-muted-foreground hover:text-foreground hover:border-white/30 transition-colors"
+            >
+              See teacher review demo
+              <span className="text-xs opacity-50">↗</span>
+            </a>
+          </div>
+        </FadeIn>
       </section>
 
       <Separator className="max-w-3xl mx-auto opacity-20" />
@@ -538,6 +551,19 @@ export default function Home() {
             Admin manages everything — add/remove students, assign batches, revoke access — all self-serve.
           </p>
         </FadeIn>
+        <FadeIn delay={0.1}>
+          <div className="mt-6 flex justify-center">
+            <a
+              href="/demo/student"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/15 text-sm text-muted-foreground hover:text-foreground hover:border-white/30 transition-colors"
+            >
+              Try student demo
+              <span className="text-xs opacity-50">↗</span>
+            </a>
+          </div>
+        </FadeIn>
       </section>
 
       <Separator className="max-w-3xl mx-auto opacity-20" />
@@ -556,6 +582,19 @@ export default function Home() {
           </h2>
         </FadeIn>
         <AnalyticsDashboard />
+        <FadeIn delay={0.1}>
+          <div className="mt-6 flex justify-center">
+            <a
+              href="/demo/analytics"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/15 text-sm text-muted-foreground hover:text-foreground hover:border-white/30 transition-colors"
+            >
+              Explore analytics demo
+              <span className="text-xs opacity-50">↗</span>
+            </a>
+          </div>
+        </FadeIn>
       </section>
 
       <Separator className="max-w-3xl mx-auto opacity-20" />

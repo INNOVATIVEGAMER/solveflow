@@ -1,0 +1,241 @@
+{
+  "title": "DPP #1 — Mixed Revision",
+  "subtitle": "Physics · Chemistry · Biology",
+  "target": "NEET 2025",
+  "class": "12",
+  "date": "2026-02-24",
+  "instructions": "Each question carries 4 marks for correct answer and -1 for incorrect. Do not leave questions unattempted if you are reasonably confident.",
+  "subjects": [
+    {
+      "name": "Physics",
+      "color": "cyan",
+      "icon": "⚛",
+      "questions": [
+        {
+          "id": "P1",
+          "topic": "Electrostatics",
+          "text": "Two point charges $+q$ and $-q$ are placed at a distance $d$ apart. The electric potential at the midpoint of the line joining them is:",
+          "options": [
+            { "key": "A", "text": "$\\dfrac{2kq}{d}$" },
+            { "key": "B", "text": "$\\dfrac{kq}{d}$" },
+            { "key": "C", "text": "$0$" },
+            { "key": "D", "text": "$-\\dfrac{2kq}{d}$" }
+          ],
+          "correct": "C",
+          "marks": 4,
+          "solution": "The electric potential at a point is the algebraic sum of potentials due to all charges.\n\nLet the midpoint be at distance $\\dfrac{d}{2}$ from each charge.\n\n$$V_{+q} = \\frac{kq}{d/2} = \\frac{2kq}{d}$$\n\n$$V_{-q} = \\frac{k(-q)}{d/2} = -\\frac{2kq}{d}$$\n\n$$V_{\\text{total}} = V_{+q} + V_{-q} = \\frac{2kq}{d} - \\frac{2kq}{d} = \\boxed{0}$$\n\nNote: Electric field at midpoint is **not** zero — only the potential is."
+        },
+        {
+          "id": "P2",
+          "topic": "Current Electricity",
+          "text": "A wire of resistance $R$ is stretched to double its length. Its new resistance will be:",
+          "options": [
+            { "key": "A", "text": "$\\dfrac{R}{2}$" },
+            { "key": "B", "text": "$R$" },
+            { "key": "C", "text": "$2R$" },
+            { "key": "D", "text": "$4R$" }
+          ],
+          "correct": "D",
+          "marks": 4,
+          "solution": "Resistance is given by $R = \\rho \\dfrac{L}{A}$.\n\nWhen a wire is stretched, volume remains constant:\n$$V = A \\cdot L = \\text{const}$$\n\nIf length becomes $L' = 2L$, then:\n$$A' = \\frac{V}{L'} = \\frac{AL}{2L} = \\frac{A}{2}$$\n\nNew resistance:\n$$R' = \\rho \\frac{L'}{A'} = \\rho \\frac{2L}{A/2} = \\rho \\frac{4L}{A} = \\boxed{4R}$$"
+        },
+        {
+          "id": "P3",
+          "topic": "Magnetic Effects of Current",
+          "text": "A circular loop of radius $r$ carries current $I$. The magnetic field at its centre is $B$. If the radius is doubled and current is halved, the new magnetic field at the centre will be:",
+          "options": [
+            { "key": "A", "text": "$4B$" },
+            { "key": "B", "text": "$2B$" },
+            { "key": "C", "text": "$\\dfrac{B}{4}$" },
+            { "key": "D", "text": "$\\dfrac{B}{2}$" }
+          ],
+          "correct": "C",
+          "marks": 4,
+          "solution": "Magnetic field at the centre of a circular loop:\n$$B = \\frac{\\mu_0 I}{2r}$$\n\nSo $B \\propto \\dfrac{I}{r}$.\n\nNew conditions: $I' = \\dfrac{I}{2}$, $r' = 2r$\n\n$$B' = \\frac{\\mu_0 I'}{2r'} = \\frac{\\mu_0 (I/2)}{2(2r)} = \\frac{\\mu_0 I}{8r} = \\frac{B}{4}$$\n\n$$\\boxed{B' = \\frac{B}{4}}$$"
+        },
+        {
+          "id": "P4",
+          "topic": "Optics — Wave Nature",
+          "text": "In Young's double slit experiment, the fringe width is $\\beta$. If the distance between the slits is doubled and the distance to the screen is halved, the new fringe width is:",
+          "options": [
+            { "key": "A", "text": "$4\\beta$" },
+            { "key": "B", "text": "$2\\beta$" },
+            { "key": "C", "text": "$\\dfrac{\\beta}{2}$" },
+            { "key": "D", "text": "$\\dfrac{\\beta}{4}$" }
+          ],
+          "correct": "D",
+          "marks": 4,
+          "solution": "Fringe width in YDSE:\n$$\\beta = \\frac{\\lambda D}{d}$$\n\nwhere $D$ = distance to screen, $d$ = slit separation, $\\lambda$ = wavelength.\n\nNew values: $d' = 2d$, $D' = D/2$\n\n$$\\beta' = \\frac{\\lambda D'}{d'} = \\frac{\\lambda (D/2)}{2d} = \\frac{\\lambda D}{4d} = \\frac{\\beta}{4}$$\n\n$$\\boxed{\\beta' = \\frac{\\beta}{4}}$$"
+        },
+        {
+          "id": "P5",
+          "topic": "Modern Physics",
+          "text": "The de Broglie wavelength of an electron accelerated through a potential difference $V$ (in volts) is approximately:",
+          "options": [
+            { "key": "A", "text": "$\\dfrac{1.227}{\\sqrt{V}}$ nm" },
+            { "key": "B", "text": "$\\dfrac{12.27}{\\sqrt{V}}$ Å" },
+            { "key": "C", "text": "$\\dfrac{0.1227}{\\sqrt{V}}$ nm" },
+            { "key": "D", "text": "Both A and B are correct" }
+          ],
+          "correct": "D",
+          "marks": 4,
+          "solution": "The de Broglie wavelength of an electron accelerated through $V$ volts:\n\n$$\\lambda = \\frac{h}{p} = \\frac{h}{\\sqrt{2meV}}$$\n\nSubstituting values ($h = 6.626 \\times 10^{-34}$ J·s, $m = 9.1 \\times 10^{-31}$ kg, $e = 1.6 \\times 10^{-19}$ C):\n\n$$\\lambda = \\frac{1.227}{\\sqrt{V}} \\text{ nm} = \\frac{12.27}{\\sqrt{V}} \\text{ Å}$$\n\nNote: $1 \\text{ nm} = 10 \\text{ Å}$, so both expressions are equivalent. **Both A and B are correct.**"
+        }
+      ]
+    },
+    {
+      "name": "Chemistry",
+      "color": "purple",
+      "icon": "🧪",
+      "questions": [
+        {
+          "id": "C1",
+          "topic": "Electrochemistry",
+          "text": "The standard electrode potential $E^\\circ$ for the cell reaction is related to the standard Gibbs free energy by:",
+          "options": [
+            { "key": "A", "text": "$\\Delta G^\\circ = nFE^\\circ$" },
+            { "key": "B", "text": "$\\Delta G^\\circ = -nFE^\\circ$" },
+            { "key": "C", "text": "$\\Delta G^\\circ = \\dfrac{nFE^\\circ}{RT}$" },
+            { "key": "D", "text": "$\\Delta G^\\circ = -\\dfrac{RT}{nF}\\ln K$" }
+          ],
+          "correct": "B",
+          "marks": 4,
+          "solution": "The relationship between standard Gibbs free energy and EMF:\n\n$$\\Delta G^\\circ = -nFE^\\circ$$\n\nwhere:\n- $n$ = number of electrons transferred\n- $F$ = Faraday's constant ($96485$ C mol$^{-1}$)\n- $E^\\circ$ = standard EMF of the cell\n\nFor a **spontaneous** reaction, $\\Delta G^\\circ < 0$, which means $E^\\circ > 0$.\n\nNote: Option D is also a valid thermodynamic relation ($\\Delta G^\\circ = -RT \\ln K$), but it doesn't directly relate to $E^\\circ$."
+        },
+        {
+          "id": "C2",
+          "topic": "Chemical Kinetics",
+          "text": "For a first-order reaction, if the initial concentration is $[A]_0$ and rate constant is $k$, the time for 75% completion is:",
+          "options": [
+            { "key": "A", "text": "$\\dfrac{\\ln 2}{k}$" },
+            { "key": "B", "text": "$\\dfrac{2\\ln 2}{k}$" },
+            { "key": "C", "text": "$\\dfrac{\\ln 4}{k}$" },
+            { "key": "D", "text": "$\\dfrac{3\\ln 2}{k}$" }
+          ],
+          "correct": "B",
+          "marks": 4,
+          "solution": "For a first-order reaction:\n$$t = \\frac{1}{k} \\ln\\frac{[A]_0}{[A]_t}$$\n\nAt 75% completion, 75% of $[A]_0$ has reacted:\n$$[A]_t = [A]_0 - 0.75[A]_0 = 0.25[A]_0$$\n\n$$t_{75\\%} = \\frac{1}{k} \\ln\\frac{[A]_0}{0.25[A]_0} = \\frac{\\ln 4}{k} = \\frac{2\\ln 2}{k}$$\n\n$$\\boxed{t_{75\\%} = \\frac{2\\ln 2}{k} = 2 \\times t_{1/2}}$$\n\nThis makes sense: 75% completion = two half-lives (50% → 75%)."
+        },
+        {
+          "id": "C3",
+          "topic": "p-Block Elements",
+          "text": "Which of the following is the correct order of bond angles in $\\text{NH}_3$, $\\text{H}_2\\text{O}$, and $\\text{CH}_4$?",
+          "options": [
+            { "key": "A", "text": "$\\text{CH}_4 > \\text{NH}_3 > \\text{H}_2\\text{O}$" },
+            { "key": "B", "text": "$\\text{H}_2\\text{O} > \\text{NH}_3 > \\text{CH}_4$" },
+            { "key": "C", "text": "$\\text{NH}_3 > \\text{CH}_4 > \\text{H}_2\\text{O}$" },
+            { "key": "D", "text": "$\\text{CH}_4 > \\text{H}_2\\text{O} > \\text{NH}_3$" }
+          ],
+          "correct": "A",
+          "marks": 4,
+          "solution": "All three molecules have $sp^3$ hybridised central atoms, but lone pairs compress bond angles:\n\n| Molecule | Bonding pairs | Lone pairs | Bond angle |\n|----------|--------------|------------|------------|\n| $\\text{CH}_4$ | 4 | 0 | $109.5°$ |\n| $\\text{NH}_3$ | 3 | 1 | $107°$ |\n| $\\text{H}_2\\text{O}$ | 2 | 2 | $104.5°$ |\n\nLone pair–lone pair repulsion > lone pair–bond pair repulsion > bond pair–bond pair repulsion.\n\nEach lone pair on $\\text{N}$ and $\\text{O}$ compresses the angle further.\n\n$$\\boxed{\\text{CH}_4 (109.5°) > \\text{NH}_3 (107°) > \\text{H}_2\\text{O} (104.5°)}$$"
+        },
+        {
+          "id": "C4",
+          "topic": "Biomolecules",
+          "text": "Which of the following statements about DNA double helix is **incorrect**?",
+          "options": [
+            { "key": "A", "text": "Adenine pairs with Thymine via 2 hydrogen bonds" },
+            { "key": "B", "text": "Guanine pairs with Cytosine via 3 hydrogen bonds" },
+            { "key": "C", "text": "The two strands are antiparallel" },
+            { "key": "D", "text": "The sugar-phosphate backbone is on the inside of the helix" }
+          ],
+          "correct": "D",
+          "marks": 4,
+          "solution": "In Watson-Crick model of DNA double helix:\n\n- **A–T**: 2 hydrogen bonds ✓ (correct)\n- **G–C**: 3 hydrogen bonds ✓ (correct)\n- **Antiparallel strands**: One strand runs 5'→3', the other 3'→5' ✓ (correct)\n- **Sugar-phosphate backbone**: It is on the **OUTSIDE** of the helix, with nitrogenous bases stacked on the **inside** ✗ (INCORRECT statement)\n\nThe bases face inward and pair via hydrogen bonds. The hydrophilic backbone faces outward toward the aqueous environment.\n\n**Answer: D is the incorrect statement.**"
+        },
+        {
+          "id": "C5",
+          "topic": "Solutions",
+          "text": "The van't Hoff factor $i$ for $\\text{K}_2\\text{SO}_4$ in dilute aqueous solution is:",
+          "options": [
+            { "key": "A", "text": "$1$" },
+            { "key": "B", "text": "$2$" },
+            { "key": "C", "text": "$3$" },
+            { "key": "D", "text": "$4$" }
+          ],
+          "correct": "C",
+          "marks": 4,
+          "solution": "$\\text{K}_2\\text{SO}_4$ is a strong electrolyte that completely dissociates in dilute solution:\n\n$$\\text{K}_2\\text{SO}_4 \\xrightarrow{\\text{H}_2\\text{O}} 2\\text{K}^+ + \\text{SO}_4^{2-}$$\n\nNumber of particles per formula unit = $2 + 1 = 3$\n\n$$i = \\frac{\\text{observed colligative property}}{\\text{theoretical (non-dissociated)}} = \\frac{3}{1} = \\boxed{3}$$\n\nThis means colligative properties (elevation of boiling point, depression of freezing point, osmotic pressure) are **3 times** higher than expected for a non-electrolyte of same concentration."
+        }
+      ]
+    },
+    {
+      "name": "Biology",
+      "color": "green",
+      "icon": "🧬",
+      "questions": [
+        {
+          "id": "B1",
+          "topic": "Reproduction in Organisms",
+          "text": "Which of the following is an example of vegetative propagation that is **not** naturally occurring but is induced artificially?",
+          "options": [
+            { "key": "A", "text": "Rhizome formation in ginger" },
+            { "key": "B", "text": "Runner formation in strawberry" },
+            { "key": "C", "text": "Tissue culture of orchids" },
+            { "key": "D", "text": "Bulbil formation in Agave" }
+          ],
+          "correct": "C",
+          "marks": 4,
+          "solution": "Vegetative propagation can be natural or artificial:\n\n**Natural vegetative propagation:**\n- **Rhizome** (ginger, turmeric) — underground stem\n- **Runner/Stolon** (strawberry, grass) — horizontal stem\n- **Bulbil** (Agave, garlic) — modified bud\n\n**Artificial vegetative propagation:**\n- **Tissue culture** — explants (small pieces of plant tissue) are cultured on nutrient media under sterile conditions to regenerate whole plants\n- Also includes cutting, layering, grafting\n\nTissue culture is a **totipotency**-based technique — any living cell has the genetic potential to develop into a complete organism.\n\n**Answer: C — Tissue culture**"
+        },
+        {
+          "id": "B2",
+          "topic": "Genetics — Mendelian",
+          "text": "In a dihybrid cross between RRYY and rryy, what fraction of the F₂ generation will show both recessive phenotypes (round, yellow — assuming R=round, r=wrinkled; Y=green, y=yellow)?",
+          "options": [
+            { "key": "A", "text": "$\\dfrac{1}{16}$" },
+            { "key": "B", "text": "$\\dfrac{3}{16}$" },
+            { "key": "C", "text": "$\\dfrac{9}{16}$" },
+            { "key": "D", "text": "$\\dfrac{1}{4}$" }
+          ],
+          "correct": "A",
+          "marks": 4,
+          "solution": "In a dihybrid cross RRYY × rryy:\n- F₁ is all RrYy\n- F₂ follows the **9:3:3:1** ratio\n\n| Phenotype | Genotype classes | Fraction |\n|-----------|-----------------|----------|\n| Round, Green (R_Y_) | RRYY, RRYy, RrYY, RrYy | 9/16 |\n| Round, Yellow (R_yy) | RRyy, Rryy | 3/16 |\n| Wrinkled, Green (rrY_) | rrYY, rrYy | 3/16 |\n| Wrinkled, Yellow (rryy) | rryy | **1/16** |\n\nBoth recessive phenotypes = wrinkled AND yellow = **rryy**\n\nProbability = $\\frac{1}{4}$ (rr) × $\\frac{1}{4}$ (yy) = $\\boxed{\\dfrac{1}{16}}$"
+        },
+        {
+          "id": "B3",
+          "topic": "Molecular Biology",
+          "text": "The enzyme that joins Okazaki fragments during DNA replication is:",
+          "options": [
+            { "key": "A", "text": "DNA Polymerase I" },
+            { "key": "B", "text": "DNA Polymerase III" },
+            { "key": "C", "text": "DNA Ligase" },
+            { "key": "D", "text": "Primase" }
+          ],
+          "correct": "C",
+          "marks": 4,
+          "solution": "During DNA replication, the lagging strand is synthesised discontinuously as **Okazaki fragments** (each starting with an RNA primer).\n\n**Role of each enzyme:**\n- **Primase**: Synthesises RNA primers (short RNA sequences to initiate synthesis)\n- **DNA Pol III**: Main replicating enzyme — extends from primer, synthesises Okazaki fragments\n- **DNA Pol I**: Removes RNA primers and fills the gaps with DNA\n- **DNA Ligase**: **Joins** the Okazaki fragments by forming phosphodiester bonds between them\n\nThe final step — covalently joining the fragments — is performed by **DNA Ligase**.\n\n**Answer: C — DNA Ligase**"
+        },
+        {
+          "id": "B4",
+          "topic": "Human Physiology — Digestion",
+          "text": "Which of the following enzymes is responsible for the conversion of caseinogen (milk protein) to casein in the stomach of infants?",
+          "options": [
+            { "key": "A", "text": "Pepsin" },
+            { "key": "B", "text": "Rennin (Chymosin)" },
+            { "key": "C", "text": "Trypsin" },
+            { "key": "D", "text": "Lipase" }
+          ],
+          "correct": "B",
+          "marks": 4,
+          "solution": "**Gastric enzymes and their functions:**\n\n- **Pepsin**: Breaks down proteins into proteoses and peptones (acts on most proteins)\n- **Rennin (Chymosin)**: Specifically converts **caseinogen → casein** (coagulates milk protein). Present in infants, absent in adults.\n- **Trypsin**: Pancreatic enzyme (not gastric) — acts in small intestine\n- **Gastric lipase**: Acts on emulsified fats\n\n**Rennin** is secreted as pro-rennin (inactive) and activated by HCl in the stomach. It coagulates milk, slowing its passage and allowing better digestion in infants.\n\n**Answer: B — Rennin**"
+        },
+        {
+          "id": "B5",
+          "topic": "Ecology",
+          "text": "Which of the following correctly describes the relationship in lichens (a symbiotic association between algae and fungi)?",
+          "options": [
+            { "key": "A", "text": "Mutualism — both partners benefit" },
+            { "key": "B", "text": "Commensalism — algae benefit, fungi unaffected" },
+            { "key": "C", "text": "Parasitism — fungi benefit at algae's expense" },
+            { "key": "D", "text": "Amensalism — algae are harmed, fungi unaffected" }
+          ],
+          "correct": "A",
+          "marks": 4,
+          "solution": "**Lichens** are a classic example of **mutualism**:\n\n| Partner | Contribution | Benefit received |\n|---------|-------------|------------------|\n| **Algae** (phycobiont) | Photosynthesis → provides organic food (carbohydrates) | Protection from desiccation, mineral absorption |\n| **Fungi** (mycobiont) | Provides structural support, absorbs water and minerals | Food from algal photosynthesis |\n\nBoth organisms **benefit** from the association — this is the definition of **mutualism**.\n\nNote: Some ecologists argue it leans toward controlled parasitism by fungi, but for NEET purposes, lichens = **mutualism**.\n\n**Answer: A — Mutualism**"
+        }
+      ]
+    }
+  ]
+}

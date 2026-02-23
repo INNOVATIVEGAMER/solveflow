@@ -614,10 +614,64 @@ function SlideSix() {
         ))}
       </div>
 
+      {/* ── See it live ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.5, delay: 0.7 }}
+        className="mt-10 mb-4"
+      >
+        <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground/40 mb-4">
+          See it live
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            {
+              href: "/demo/student",
+              icon: "🎓",
+              label: "Student View",
+              desc: "Attempt a NEET DPP, check solutions",
+              color: "hover:border-cyan-500/40 hover:bg-cyan-500/5",
+            },
+            {
+              href: "/demo/teacher",
+              icon: "✏️",
+              label: "Teacher Review",
+              desc: "Upload, review answers, publish",
+              color: "hover:border-purple-500/40 hover:bg-purple-500/5",
+            },
+            {
+              href: "/demo/analytics",
+              icon: "📊",
+              label: "Analytics",
+              desc: "Class performance & insights",
+              color: "hover:border-green-500/40 hover:bg-green-500/5",
+            },
+          ].map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3.5 transition-all duration-200 ${item.color}`}
+            >
+              <span className="text-xl flex-shrink-0 mt-0.5">{item.icon}</span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-white/90 flex items-center gap-1">
+                  {item.label}
+                  <span className="text-xs text-white/25">↗</span>
+                </p>
+                <p className="text-xs text-white/40 mt-0.5 leading-snug">{item.desc}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </motion.div>
+
       <motion.div
         initial={{ opacity: 0 }}
         animate={inView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.5, delay: 0.6 }}
+        transition={{ duration: 0.5, delay: 0.9 }}
       >
         <Link
           href="/"
