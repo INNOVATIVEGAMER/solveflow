@@ -173,7 +173,7 @@ export default function ShortPage() {
     <div className="min-h-screen bg-background">
       <Navbar variant="short" />
 
-      <div className="max-w-2xl mx-auto px-5">
+      <div className="max-w-2xl md:max-w-4xl mx-auto px-5">
 
         {/* ══ SLIDE 1: THE PROBLEM ══════════════════════════════════════════ */}
         <Section>
