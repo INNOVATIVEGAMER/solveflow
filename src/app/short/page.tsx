@@ -13,6 +13,7 @@ import {
   useTransform,
 } from "framer-motion";
 import { useRef, useEffect } from "react";
+import { AnalyticsDashboard } from "@/components/sections/analytics-dashboard";
 
 // ─── Animation helpers ────────────────────────────────────────────────────────
 
@@ -248,7 +249,14 @@ export default function ShortPage() {
 
         <Separator className="opacity-20" />
 
-        {/* ══ SLIDE 6: RESULTS + CTA ══════════════════════════════════════ */}
+        {/* ══ SLIDE 6: ANALYTICS ══════════════════════════════════════════ */}
+        <Section>
+          <SlideAnalytics />
+        </Section>
+
+        <Separator className="opacity-20" />
+
+        {/* ══ SLIDE 7: RESULTS + CTA ══════════════════════════════════════ */}
         <Section className="text-center">
           <SlideSix />
         </Section>
@@ -532,7 +540,37 @@ function SlideFive() {
   );
 }
 
-// ─── Slide 6: Results + CTA ───────────────────────────────────────────────────
+// ─── Slide 6: Analytics ───────────────────────────────────────────────────────
+
+function SlideAnalytics() {
+  const { ref, inView } = useReveal();
+
+  return (
+    <div ref={ref}>
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.5 }}
+      >
+        <Badge variant="outline" className="font-mono text-xs tracking-widest uppercase mb-5">
+          Analytics Dashboard
+        </Badge>
+      </motion.div>
+      <motion.h2
+        className="text-3xl md:text-4xl font-bold tracking-tight"
+        initial={{ opacity: 0, y: 14 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        Data you&apos;ve{" "}
+        <span className="text-muted-foreground/40">never had before.</span>
+      </motion.h2>
+      <AnalyticsDashboard />
+    </div>
+  );
+}
+
+// ─── Slide 7: Results + CTA ───────────────────────────────────────────────────
 
 function SlideSix() {
   const { ref, inView } = useReveal();
