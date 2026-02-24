@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Typst binaries — only Linux x64 (for Vercel) is committed.
+# Mac/Windows devs: run `node scripts/setup-typst.mjs` to download locally.
+scripts/bin/typst-mac-arm64
+scripts/bin/typst-mac-x64
+scripts/bin/typst-win-x64.exe

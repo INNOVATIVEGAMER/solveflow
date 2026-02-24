@@ -7,33 +7,53 @@ import { Navbar } from "@/components/layout/navbar";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface Option { key: string; text: string; }
-interface Question {
-  id: string; topic: string; text: string;
-  options: Option[]; correct: string; marks: number; solution: string;
+interface Option {
+  key: string;
+  text: string;
 }
-interface Subject { name: string; color: string; icon: string; questions: Question[]; }
+interface Question {
+  id: string;
+  topic: string;
+  text: string;
+  options: Option[];
+  correct: string;
+  marks: number;
+  solution: string;
+}
+interface Subject {
+  name: string;
+  color: string;
+  icon: string;
+  questions: Question[];
+}
 interface DppData {
-  title: string; subtitle: string; target: string;
-  class: string; date: string; instructions: string; subjects: Subject[];
+  title: string;
+  subtitle: string;
+  target: string;
+  class: string;
+  date: string;
+  instructions: string;
+  subjects: Subject[];
 }
 
 type QuestionStatus =
-  | "pending"       // not reviewed yet
-  | "approved"      // teacher approved AI answer as-is
-  | "uploading"     // handwritten image uploaded, fake pipeline running
-  | "parsing"       // pipeline done, parsed solution shown, awaiting teacher decision
-  | "corrected"     // teacher approved parsed handwritten solution
-  | "reported";     // teacher reported failure
+  | "pending" // not reviewed yet
+  | "approved" // teacher approved AI answer as-is
+  | "uploading" // handwritten image uploaded, fake pipeline running
+  | "parsing" // pipeline done, parsed solution shown, awaiting teacher decision
+  | "corrected" // teacher approved parsed handwritten solution
+  | "reported"; // teacher reported failure
 
 interface QuestionState {
   status: QuestionStatus;
-  uploadedImageUrl?: string;    // object URL of uploaded image
-  parsedSolution?: string;      // "pipeline result" (we reuse AI solution as demo)
-  parseProgress?: number;       // 0-100 fake progress
+  uploadedImageUrl?: string; // object URL of uploaded image
+  parsedSolution?: string; // "pipeline result" (we reuse AI solution as demo)
+  parseProgress?: number; // 0-100 fake progress
 }
 
-interface TeacherReviewProps { initialData?: DppData | null; }
+interface TeacherReviewProps {
+  initialData?: DppData | null;
+}
 
 // ─── Pipeline stages copy ─────────────────────────────────────────────────────
 
@@ -47,26 +67,64 @@ const PIPELINE_STAGES = [
 
 // ─── Colour map ───────────────────────────────────────────────────────────────
 
-const colorMap: Record<string, { bg: string; border: string; text: string; badge: string }> = {
-  cyan:   { bg: "bg-cyan-500/10",   border: "border-cyan-500/30",   text: "text-cyan-400",   badge: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30" },
-  purple: { bg: "bg-purple-500/10", border: "border-purple-500/30", text: "text-purple-400", badge: "bg-purple-500/20 text-purple-300 border-purple-500/30" },
-  green:  { bg: "bg-green-500/10",  border: "border-green-500/30",  text: "text-green-400",  badge: "bg-green-500/20 text-green-300 border-green-500/30" },
+const colorMap: Record<
+  string,
+  { bg: string; border: string; text: string; badge: string }
+> = {
+  cyan: {
+    bg: "bg-cyan-500/10",
+    border: "border-cyan-500/30",
+    text: "text-cyan-400",
+    badge: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
+  },
+  purple: {
+    bg: "bg-purple-500/10",
+    border: "border-purple-500/30",
+    text: "text-purple-400",
+    badge: "bg-purple-500/20 text-purple-300 border-purple-500/30",
+  },
+  green: {
+    bg: "bg-green-500/10",
+    border: "border-green-500/30",
+    text: "text-green-400",
+    badge: "bg-green-500/20 text-green-300 border-green-500/30",
+  },
 };
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: QuestionStatus }) {
   const map: Record<QuestionStatus, { label: string; cls: string }> = {
-    pending:   { label: "Pending",    cls: "bg-white/10 text-white/40 border-white/10" },
-    approved:  { label: "Approved",   cls: "bg-green-500/20 text-green-400 border-green-500/30" },
-    uploading: { label: "Processing", cls: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
-    parsing:   { label: "Parsed — review", cls: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
-    corrected: { label: "Corrected",  cls: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
-    reported:  { label: "Reported",   cls: "bg-red-500/20 text-red-400 border-red-500/30" },
+    pending: {
+      label: "Pending",
+      cls: "bg-white/10 text-white/40 border-white/10",
+    },
+    approved: {
+      label: "Approved",
+      cls: "bg-green-500/20 text-green-400 border-green-500/30",
+    },
+    uploading: {
+      label: "Processing",
+      cls: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+    },
+    parsing: {
+      label: "Parsed — review",
+      cls: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    },
+    corrected: {
+      label: "Corrected",
+      cls: "bg-purple-500/20 text-purple-400 border-purple-500/30",
+    },
+    reported: {
+      label: "Reported",
+      cls: "bg-red-500/20 text-red-400 border-red-500/30",
+    },
   };
   const { label, cls } = map[status];
   return (
-    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${cls}`}>
+    <span
+      className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${cls}`}
+    >
       {label}
     </span>
   );
@@ -75,7 +133,10 @@ function StatusBadge({ status }: { status: QuestionStatus }) {
 // ─── Pipeline progress bar ────────────────────────────────────────────────────
 
 function PipelineProgress({ progress }: { progress: number }) {
-  const stageIndex = Math.min(Math.floor(progress / 20), PIPELINE_STAGES.length - 1);
+  const stageIndex = Math.min(
+    Math.floor(progress / 20),
+    PIPELINE_STAGES.length - 1,
+  );
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-xs text-white/50">
@@ -121,7 +182,8 @@ function QuestionReviewCard({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { status } = qState;
 
-  const isDone = status === "approved" || status === "corrected" || status === "reported";
+  const isDone =
+    status === "approved" || status === "corrected" || status === "reported";
 
   return (
     <motion.div
@@ -132,12 +194,12 @@ function QuestionReviewCard({
         status === "approved" || status === "corrected"
           ? "border-green-500/20"
           : status === "reported"
-          ? "border-red-500/20"
-          : status === "parsing"
-          ? "border-blue-500/30"
-          : status === "uploading"
-          ? "border-yellow-500/20"
-          : colors.border
+            ? "border-red-500/20"
+            : status === "parsing"
+              ? "border-blue-500/30"
+              : status === "uploading"
+                ? "border-yellow-500/20"
+                : colors.border
       }`}
     >
       {/* ── Card header ── */}
@@ -145,13 +207,21 @@ function QuestionReviewCard({
         className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/[0.02] transition-colors"
         onClick={() => setExpanded((e) => !e)}
       >
-        <span className={`text-xs font-bold px-2 py-0.5 rounded-full border flex-shrink-0 ${colors.badge}`}>
+        <span
+          className={`text-xs font-bold px-2 py-0.5 rounded-full border flex-shrink-0 ${colors.badge}`}
+        >
           {q.id}
         </span>
-        <span className="text-xs text-white/50 flex-shrink-0 hidden xs:block">{q.topic}</span>
-        <p className="flex-1 text-sm text-white/70 truncate min-w-0">{q.text.replace(/\$[^$]+\$/g, "…")}</p>
+        <span className="text-xs text-white/50 flex-shrink-0 hidden xs:block">
+          {q.topic}
+        </span>
+        <p className="flex-1 text-sm text-white/70 truncate min-w-0">
+          {q.text.replace(/\$[^$]+\$/g, "…")}
+        </p>
         <StatusBadge status={status} />
-        <span className="text-white/30 text-xs ml-1">{expanded ? "▲" : "▼"}</span>
+        <span className="text-white/30 text-xs ml-1">
+          {expanded ? "▲" : "▼"}
+        </span>
       </button>
 
       {/* ── Expanded body ── */}
@@ -165,10 +235,11 @@ function QuestionReviewCard({
             className="overflow-hidden"
           >
             <div className={`border-t ${colors.border} px-4 py-4 space-y-4`}>
-
               {/* Question text */}
               <div>
-                <p className="text-xs text-white/30 uppercase tracking-wider mb-1">Question</p>
+                <p className="text-xs text-white/30 uppercase tracking-wider mb-1">
+                  Question
+                </p>
                 <div className="text-sm text-white/85 leading-relaxed">
                   <MathMarkdown content={q.text} />
                 </div>
@@ -183,11 +254,17 @@ function QuestionReviewCard({
                             : "border-white/10 text-white/50"
                         }`}
                       >
-                        <span className={`font-bold flex-shrink-0 ${opt.key === q.correct ? "text-green-400" : "text-white/40"}`}>
+                        <span
+                          className={`font-bold flex-shrink-0 ${opt.key === q.correct ? "text-green-400" : "text-white/40"}`}
+                        >
                           {opt.key}
                         </span>
                         <MathMarkdown content={opt.text} />
-                        {opt.key === q.correct && <span className="flex-shrink-0 text-green-400 ml-auto">✓</span>}
+                        {opt.key === q.correct && (
+                          <span className="flex-shrink-0 text-green-400 ml-auto">
+                            ✓
+                          </span>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -195,12 +272,18 @@ function QuestionReviewCard({
               </div>
 
               {/* AI-generated solution */}
-              <div className={`rounded-lg border ${colors.border} ${colors.bg} px-4 py-3`}>
+              <div
+                className={`rounded-lg border ${colors.border} ${colors.bg} px-4 py-3`}
+              >
                 <div className="flex items-center gap-2 mb-2">
-                  <p className={`text-xs font-semibold uppercase tracking-wider ${colors.text}`}>
+                  <p
+                    className={`text-xs font-semibold uppercase tracking-wider ${colors.text}`}
+                  >
                     AI-Generated Solution
                   </p>
-                  <span className="text-xs text-white/30">· auto-generated by SolveFlow</span>
+                  <span className="text-xs text-white/30">
+                    · auto-generated by SolveFlow
+                  </span>
                 </div>
                 <div className="text-sm text-white/75 leading-relaxed">
                   <MathMarkdown content={q.solution} />
@@ -210,7 +293,9 @@ function QuestionReviewCard({
               {/* ── Pipeline progress (uploading state) ── */}
               {status === "uploading" && qState.parseProgress !== undefined && (
                 <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 px-4 py-3">
-                  <p className="text-xs font-semibold text-yellow-400 mb-2">Processing handwritten solution…</p>
+                  <p className="text-xs font-semibold text-yellow-400 mb-2">
+                    Processing handwritten solution…
+                  </p>
                   {qState.uploadedImageUrl && (
                     <img
                       src={qState.uploadedImageUrl}
@@ -226,8 +311,12 @@ function QuestionReviewCard({
               {status === "parsing" && (
                 <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 px-4 py-3 space-y-3">
                   <div className="flex items-center gap-2">
-                    <p className="text-xs font-semibold text-blue-400">Pipeline complete — parsed solution</p>
-                    <span className="text-xs text-white/30">· from your handwritten upload</span>
+                    <p className="text-xs font-semibold text-blue-400">
+                      Pipeline complete — parsed solution
+                    </p>
+                    <span className="text-xs text-white/30">
+                      · from your handwritten upload
+                    </span>
                   </div>
                   {qState.uploadedImageUrl && (
                     <div className="flex gap-3 items-start">
@@ -237,7 +326,9 @@ function QuestionReviewCard({
                         className="w-24 h-24 object-cover rounded-lg border border-white/10 bg-white/5 flex-shrink-0"
                       />
                       <div className="flex-1 text-sm text-white/80 leading-relaxed">
-                        <MathMarkdown content={qState.parsedSolution ?? q.solution} />
+                        <MathMarkdown
+                          content={qState.parsedSolution ?? q.solution}
+                        />
                       </div>
                     </div>
                   )}
@@ -269,8 +360,12 @@ function QuestionReviewCard({
                     />
                   )}
                   <div>
-                    <p className="text-xs font-semibold text-purple-400">Teacher correction applied</p>
-                    <p className="text-xs text-white/40 mt-0.5">Handwritten solution parsed and approved</p>
+                    <p className="text-xs font-semibold text-purple-400">
+                      Teacher correction applied
+                    </p>
+                    <p className="text-xs text-white/40 mt-0.5">
+                      Handwritten solution parsed and approved
+                    </p>
                   </div>
                 </div>
               )}
@@ -278,8 +373,12 @@ function QuestionReviewCard({
               {/* ── Reported badge ── */}
               {status === "reported" && (
                 <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3">
-                  <p className="text-xs font-semibold text-red-400">Reported — sent to SolveFlow support</p>
-                  <p className="text-xs text-white/40 mt-0.5">Our team will review this question and re-process.</p>
+                  <p className="text-xs font-semibold text-red-400">
+                    Reported — sent to SolveFlow support
+                  </p>
+                  <p className="text-xs text-white/40 mt-0.5">
+                    Our team will review this question and re-process.
+                  </p>
                 </div>
               )}
 
@@ -353,6 +452,8 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
   const [phase, setPhase] = useState<PagePhase>("upload");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [activeSubject, setActiveSubject] = useState(0);
+  const [pdfDownloading, setPdfDownloading] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
 
   // Per-question state keyed by question id
   const [qStates, setQStates] = useState<Record<string, QuestionState>>({});
@@ -362,10 +463,16 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
   const pdfInputRef = useRef<HTMLInputElement>(null);
 
   // Interval ref for fake progress animation during real API call
-  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
 
-  // ── Real PDF upload — calls /api/parse-dpp ──
+  // ── PDF upload — routes to demo or real API based on demoMode ──
   async function handlePDFUpload(file: File) {
+    if (demoMode) {
+      await startDemoShortcut();
+      return;
+    }
     setError(null);
     setUploadedFileName(file.name);
     setPhase("processing");
@@ -394,10 +501,13 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error((errorData as { error?: string }).error ?? `Server error: ${response.status}`);
+        throw new Error(
+          (errorData as { error?: string }).error ??
+            `Server error: ${response.status}`,
+        );
       }
 
-      const { dpp: parsedDpp } = await response.json() as { dpp: DppData };
+      const { dpp: parsedDpp } = (await response.json()) as { dpp: DppData };
       clearInterval(progressIntervalRef.current!);
       progressIntervalRef.current = null;
       setDpp(parsedDpp);
@@ -406,37 +516,59 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
     } catch (err) {
       clearInterval(progressIntervalRef.current!);
       progressIntervalRef.current = null;
-      const message = err instanceof Error ? err.message : "Failed to process PDF";
+      const message =
+        err instanceof Error ? err.message : "Failed to process PDF";
       setError(message);
       setPhase("upload");
     }
   }
 
-  // ── Demo shortcut — loads /demo/dpp.json directly (no API key needed) ──
+  // ── Demo shortcut — loads /demo/dpp.json but mimics a ~25 s processing animation ──
   async function startDemoShortcut() {
     setUploadedFileName("NEET_DPP_1_Class12.pdf");
     setPhase("processing");
     setUploadProgress(0);
 
+    // Fetch data immediately in the background — it's instant
+    let fetchedData: DppData | null = null;
+    let fetchError = false;
+    fetch("/demo/dpp.json")
+      .then((r) => r.json() as Promise<DppData>)
+      .then((d) => {
+        fetchedData = d;
+      })
+      .catch(() => {
+        fetchError = true;
+      });
+
+    // Crawl 0 → 95 over ~7 s (74 ms per 1 %)
+    const DEMO_DURATION_MS = 7_000;
+    const STEPS = 95;
+    const stepMs = Math.round(DEMO_DURATION_MS / STEPS);
+
     const interval = setInterval(() => {
       setUploadProgress((p) => {
-        if (p >= 95) { clearInterval(interval); return 95; }
-        return p + 2;
+        if (p >= STEPS) {
+          clearInterval(interval);
+          return STEPS;
+        }
+        return p + 1;
       });
-    }, 80);
+    }, stepMs);
 
-    try {
-      const response = await fetch("/demo/dpp.json");
-      const data = await response.json() as DppData;
-      clearInterval(interval);
-      setDpp(data);
-      setUploadProgress(100);
-      setTimeout(() => setPhase("review"), 400);
-    } catch {
-      clearInterval(interval);
+    // After the full duration, resolve regardless of fetch (it'll be done long before)
+    await new Promise<void>((resolve) => setTimeout(resolve, DEMO_DURATION_MS));
+    clearInterval(interval);
+
+    if (fetchError || !fetchedData) {
       setError("Failed to load demo data.");
       setPhase("upload");
+      return;
     }
+
+    setDpp(fetchedData);
+    setUploadProgress(100);
+    setTimeout(() => setPhase("review"), 400);
   }
 
   // ── Per-question pipeline simulation ──
@@ -444,23 +576,35 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
     const imageUrl = URL.createObjectURL(file);
     setQStates((prev) => ({
       ...prev,
-      [qId]: { status: "uploading", uploadedImageUrl: imageUrl, parseProgress: 0 },
+      [qId]: {
+        status: "uploading",
+        uploadedImageUrl: imageUrl,
+        parseProgress: 0,
+      },
     }));
 
     const interval = setInterval(() => {
       setQStates((prev) => {
         const cur = prev[qId];
-        if (!cur || cur.status !== "uploading") { clearInterval(interval); return prev; }
+        if (!cur || cur.status !== "uploading") {
+          clearInterval(interval);
+          return prev;
+        }
         const next = (cur.parseProgress ?? 0) + 3.5;
         if (next >= 100) {
           clearInterval(interval);
           // get parsed solution from dpp data
-          const parsedSolution = dpp?.subjects
-            .flatMap((s) => s.questions)
-            .find((q) => q.id === qId)?.solution ?? "";
+          const parsedSolution =
+            dpp?.subjects.flatMap((s) => s.questions).find((q) => q.id === qId)
+              ?.solution ?? "";
           return {
             ...prev,
-            [qId]: { ...cur, status: "parsing", parseProgress: 100, parsedSolution },
+            [qId]: {
+              ...cur,
+              status: "parsing",
+              parseProgress: 100,
+              parsedSolution,
+            },
           };
         }
         return { ...prev, [qId]: { ...cur, parseProgress: next } };
@@ -486,6 +630,38 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
     }));
   }
 
+  async function downloadPDF() {
+    if (!dpp || pdfDownloading) return;
+    setPdfDownloading(true);
+    try {
+      const response = await fetch("/api/generate-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dpp }),
+      });
+      if (!response.ok) {
+        const err = (await response.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        throw new Error(
+          err.error ?? `PDF generation failed (${response.status})`,
+        );
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${dpp.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to generate PDF";
+      setError(msg);
+    } finally {
+      setPdfDownloading(false);
+    }
+  }
+
   function handlePublish() {
     setPhase("published");
   }
@@ -509,46 +685,136 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
     return (
       <div className="min-h-screen bg-background text-white">
         <Navbar />
+
+        {/* ── Demo controls bar — sits below fixed navbar ── */}
         <div className="h-14" />
+        <div className="bg-white/[0.03] border-b border-white/10">
+          <div className="max-w-2xl mx-auto px-4 py-2 flex items-center gap-3 flex-wrap">
+            <span className="text-xs text-white/30 font-medium uppercase tracking-wider">
+              Demo controls
+            </span>
+
+            {/* Demo mode toggle */}
+            <button
+              onClick={() => setDemoMode((v) => !v)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
+                demoMode
+                  ? "border-yellow-500/50 bg-yellow-500/15 text-yellow-400"
+                  : "border-white/15 bg-white/5 text-white/50 hover:border-white/30 hover:text-white/70"
+              }`}
+            >
+              <span
+                className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                  demoMode
+                    ? "border-yellow-400 bg-yellow-400"
+                    : "border-white/30"
+                }`}
+              >
+                {demoMode && (
+                  <svg
+                    viewBox="0 0 8 8"
+                    className="w-2 h-2 text-black"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M1 4l2 2 4-4"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      fill="none"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                )}
+              </span>
+              Demo mode
+            </button>
+
+            <span className="text-xs text-white/25 hidden sm:inline">
+              {demoMode
+                ? "Upload is bypassed — pre-loaded DPP data will be used instantly"
+                : "Upload will call the real AI pipeline"}
+            </span>
+          </div>
+        </div>
 
         <div className="max-w-2xl mx-auto px-4 py-12 space-y-8">
           {/* Step indicators */}
           <div className="flex items-center gap-2 flex-wrap">
-            {["Upload PDF", "AI Processing", "Review & Publish"].map((step, i) => (
-              <div key={step} className="flex items-center gap-1.5">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border flex-shrink-0 ${
-                  i === 0 ? "border-cyan-500 bg-cyan-500/20 text-cyan-400" : "border-white/20 text-white/30"
-                }`}>
-                  {i + 1}
+            {["Upload PDF", "AI Processing", "Review & Publish"].map(
+              (step, i) => (
+                <div key={step} className="flex items-center gap-1.5">
+                  <div
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border flex-shrink-0 ${
+                      i === 0
+                        ? "border-cyan-500 bg-cyan-500/20 text-cyan-400"
+                        : "border-white/20 text-white/30"
+                    }`}
+                  >
+                    {i + 1}
+                  </div>
+                  <span
+                    className={`text-sm ${i === 0 ? "text-white" : "text-white/30"}`}
+                  >
+                    {step}
+                  </span>
+                  {i < 2 && (
+                    <span className="text-white/20 text-xs mx-1">→</span>
+                  )}
                 </div>
-                <span className={`text-sm ${i === 0 ? "text-white" : "text-white/30"}`}>{step}</span>
-                {i < 2 && <span className="text-white/20 text-xs mx-1">→</span>}
-              </div>
-            ))}
+              ),
+            )}
           </div>
 
           {/* Upload zone */}
           <div>
-            <h2 className="text-xl font-bold text-white mb-1">Upload DPP Sheet</h2>
+            <h2 className="text-xl font-bold text-white mb-1">
+              Upload DPP Sheet
+            </h2>
             <p className="text-white/50 text-sm mb-6">
-              Upload the PDF of your Daily Practice Paper. Our AI pipeline will parse all questions and generate detailed solutions automatically.
+              {demoMode
+                ? "Demo mode is on — drop any PDF or click the button below to load pre-built demo data instantly."
+                : "Upload the PDF of your Daily Practice Paper. Our AI pipeline will parse all questions and generate detailed solutions automatically."}
             </p>
 
             <div
-              className="rounded-2xl border-2 border-dashed border-white/20 hover:border-cyan-500/50 bg-white/[0.02] hover:bg-cyan-500/5 transition-all cursor-pointer p-6 sm:p-12 text-center"
-              onClick={() => pdfInputRef.current?.click()}
+              className={`rounded-2xl border-2 border-dashed transition-all cursor-pointer p-6 sm:p-12 text-center ${
+                demoMode
+                  ? "border-yellow-500/40 hover:border-yellow-400/60 bg-yellow-500/[0.03] hover:bg-yellow-500/[0.06]"
+                  : "border-white/20 hover:border-cyan-500/50 bg-white/[0.02] hover:bg-cyan-500/5"
+              }`}
+              onClick={() =>
+                demoMode
+                  ? void startDemoShortcut()
+                  : pdfInputRef.current?.click()
+              }
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
                 e.preventDefault();
+                if (demoMode) {
+                  void startDemoShortcut();
+                  return;
+                }
                 const file = e.dataTransfer.files[0];
                 if (file) void handlePDFUpload(file);
               }}
             >
-              <div className="text-4xl mb-3">📄</div>
-              <p className="text-white font-semibold mb-1">Drop your DPP PDF here</p>
-              <p className="text-white/40 text-sm mb-4">or click to browse</p>
-              <button className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-sm transition-colors">
-                Browse PDF
+              <div className="text-4xl mb-3">{demoMode ? "⚡" : "📄"}</div>
+              <p className="text-white font-semibold mb-1">
+                {demoMode ? "Click to load demo DPP" : "Drop your DPP PDF here"}
+              </p>
+              <p className="text-white/40 text-sm mb-4">
+                {demoMode
+                  ? "No API key needed — uses pre-built data"
+                  : "or click to browse"}
+              </p>
+              <button
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
+                  demoMode
+                    ? "bg-yellow-500 hover:bg-yellow-400 text-black"
+                    : "bg-cyan-500 hover:bg-cyan-400 text-black"
+                }`}
+              >
+                {demoMode ? "Load Demo Data" : "Browse PDF"}
               </button>
               <input
                 ref={pdfInputRef}
@@ -564,18 +830,38 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
             </div>
 
             <p className="text-center mt-4 text-xs text-white/30">
-              Supported: PDF only · Max 50 MB · Multi-page supported
+              {demoMode
+                ? "Demo mode active — real AI pipeline is bypassed"
+                : "Supported: PDF only · Max 50 MB · Multi-page supported"}
             </p>
           </div>
 
           {/* What happens next */}
           <div className="rounded-xl border border-white/10 bg-white/[0.02] px-5 py-4 space-y-3">
-            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">What happens after upload</p>
+            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">
+              What happens after upload
+            </p>
             {[
-              { icon: "🔍", title: "OCR & Parsing", desc: "Questions, options and marks are extracted from the PDF" },
-              { icon: "🤖", title: "AI Solution Generation", desc: "Step-by-step solutions generated for every question" },
-              { icon: "✅", title: "Teacher Review", desc: "You review each answer, approve or upload a handwritten correction" },
-              { icon: "🚀", title: "Publish to Students", desc: "Solutions unlock for students once you hit Publish" },
+              {
+                icon: "🔍",
+                title: "OCR & Parsing",
+                desc: "Questions, options and marks are extracted from the PDF",
+              },
+              {
+                icon: "🤖",
+                title: "AI Solution Generation",
+                desc: "Step-by-step solutions generated for every question",
+              },
+              {
+                icon: "✅",
+                title: "Teacher Review",
+                desc: "You review each answer, approve or upload a handwritten correction",
+              },
+              {
+                icon: "🚀",
+                title: "Publish to Students",
+                desc: "Solutions unlock for students once you hit Publish",
+              },
             ].map((item) => (
               <div key={item.title} className="flex items-start gap-3">
                 <span className="text-lg flex-shrink-0">{item.icon}</span>
@@ -591,8 +877,13 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
           <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/5 px-4 py-3 flex items-center gap-3">
             <span className="text-yellow-400 text-lg">⚡</span>
             <div className="flex-1">
-              <p className="text-xs font-semibold text-yellow-400">Demo shortcut</p>
-              <p className="text-xs text-white/40">Skip the upload — jump straight to the review stage with pre-loaded data.</p>
+              <p className="text-xs font-semibold text-yellow-400">
+                Demo shortcut
+              </p>
+              <p className="text-xs text-white/40">
+                Skip the upload — jump straight to the review stage with
+                pre-loaded data.
+              </p>
             </div>
             <button
               onClick={() => void startDemoShortcut()}
@@ -625,62 +916,72 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
       { label: "Structuring final JSON", threshold: 95 },
       { label: "Ready for review", threshold: 100 },
     ];
-    const currentStage = stages.filter((s) => uploadProgress >= s.threshold).at(-1);
+    const currentStage = stages
+      .filter((s) => uploadProgress >= s.threshold)
+      .at(-1);
 
     return (
       <div className="min-h-screen bg-background text-white flex flex-col px-4">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-        <div className="max-w-md w-full space-y-6">
-          <div className="text-center">
-            <div className="text-5xl mb-4">🤖</div>
-            <h2 className="text-xl font-bold text-white mb-1">Processing your DPP</h2>
-            <p className="text-white/50 text-sm">{uploadedFileName}</p>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex justify-between text-xs text-white/50">
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse inline-block" />
-                {currentStage?.label ?? "Starting…"}
-              </span>
-              <span>{Math.round(uploadProgress)}%</span>
+          <div className="max-w-md w-full space-y-6">
+            <div className="text-center">
+              <div className="text-5xl mb-4">🤖</div>
+              <h2 className="text-xl font-bold text-white mb-1">
+                Processing your DPP
+              </h2>
+              <p className="text-white/50 text-sm">{uploadedFileName}</p>
             </div>
-            <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-              <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-purple-500"
-                animate={{ width: `${uploadProgress}%` }}
-                transition={{ duration: 0.3 }}
-              />
-            </div>
-          </div>
 
-          {/* Stage checklist */}
-          <div className="space-y-2">
-            {stages.slice(0, -1).map((s) => (
-              <div key={s.label} className="flex items-center gap-2 text-sm">
-                {uploadProgress >= s.threshold ? (
-                  <span className="w-4 h-4 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center flex-shrink-0">
-                    <span className="text-green-400 text-xs">✓</span>
-                  </span>
-                ) : uploadProgress >= s.threshold - 15 ? (
-                  <span className="w-4 h-4 rounded-full border border-cyan-500/40 flex items-center justify-center flex-shrink-0">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                  </span>
-                ) : (
-                  <span className="w-4 h-4 rounded-full border border-white/10 flex-shrink-0" />
-                )}
-                <span className={uploadProgress >= s.threshold ? "text-white/70" : "text-white/25"}>
-                  {s.label}
+            <div className="space-y-3">
+              <div className="flex justify-between text-xs text-white/50">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse inline-block" />
+                  {currentStage?.label ?? "Starting…"}
                 </span>
+                <span>{Math.round(uploadProgress)}%</span>
               </div>
-            ))}
-          </div>
+              <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-purple-500"
+                  animate={{ width: `${uploadProgress}%` }}
+                  transition={{ duration: 0.3 }}
+                />
+              </div>
+            </div>
 
-          <p className="text-center text-xs text-white/25">
-            This usually takes 30–90 seconds depending on DPP length
-          </p>
-        </div>
+            {/* Stage checklist */}
+            <div className="space-y-2">
+              {stages.slice(0, -1).map((s) => (
+                <div key={s.label} className="flex items-center gap-2 text-sm">
+                  {uploadProgress >= s.threshold ? (
+                    <span className="w-4 h-4 rounded-full bg-green-500/20 border border-green-500/40 flex items-center justify-center flex-shrink-0">
+                      <span className="text-green-400 text-xs">✓</span>
+                    </span>
+                  ) : uploadProgress >= s.threshold - 15 ? (
+                    <span className="w-4 h-4 rounded-full border border-cyan-500/40 flex items-center justify-center flex-shrink-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                    </span>
+                  ) : (
+                    <span className="w-4 h-4 rounded-full border border-white/10 flex-shrink-0" />
+                  )}
+                  <span
+                    className={
+                      uploadProgress >= s.threshold
+                        ? "text-white/70"
+                        : "text-white/25"
+                    }
+                  >
+                    {s.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-center text-xs text-white/25">
+              This usually takes 30–90 seconds depending on DPP length
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -709,51 +1010,87 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
       <div className="min-h-screen bg-background text-white flex flex-col">
         <Navbar />
         <div className="flex-1 flex items-center justify-center px-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full text-center space-y-6"
-        >
-          <div className="text-6xl">🚀</div>
-          <div>
-            <h2 className="text-2xl font-bold text-white">DPP Published!</h2>
-            <p className="text-white/50 text-sm mt-2">Solutions are now live for your students.</p>
-          </div>
-          <div className="rounded-xl border border-green-500/30 bg-green-500/10 px-5 py-4 text-left space-y-2">
-            <p className="text-xs font-semibold text-green-400 uppercase tracking-wider">Summary</p>
-            {dpp.subjects.map((subj) => {
-              const c = colorMap[subj.color] ?? colorMap.cyan;
-              const approved = subj.questions.filter((q) => {
-                const s = qStates[q.id]?.status;
-                return s === "approved" || s === "corrected";
-              }).length;
-              const corrected = subj.questions.filter((q) => qStates[q.id]?.status === "corrected").length;
-              return (
-                <div key={subj.name} className="flex items-center justify-between">
-                  <span className={`text-sm ${c.text}`}>{subj.icon} {subj.name}</span>
-                  <span className="text-xs text-white/50">
-                    {approved}/{subj.questions.length} approved
-                    {corrected > 0 && <span className="text-purple-400 ml-1">({corrected} corrected)</span>}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          <div className="flex gap-3">
-            <a
-              href="/demo/student"
-              className="flex-1 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-sm transition-colors text-center"
-            >
-              View student side →
-            </a>
-            <button
-              onClick={() => setPhase("review")}
-              className="flex-1 py-2.5 rounded-lg border border-white/20 text-white/60 hover:text-white hover:border-white/40 font-semibold text-sm transition-colors"
-            >
-              Back to review
-            </button>
-          </div>
-        </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="max-w-md w-full text-center space-y-6"
+          >
+            <div className="text-6xl">🚀</div>
+            <div>
+              <h2 className="text-2xl font-bold text-white">DPP Published!</h2>
+              <p className="text-white/50 text-sm mt-2">
+                Solutions are now live for your students.
+              </p>
+            </div>
+            <div className="rounded-xl border border-green-500/30 bg-green-500/10 px-5 py-4 text-left space-y-2">
+              <p className="text-xs font-semibold text-green-400 uppercase tracking-wider">
+                Summary
+              </p>
+              {dpp.subjects.map((subj) => {
+                const c = colorMap[subj.color] ?? colorMap.cyan;
+                const approved = subj.questions.filter((q) => {
+                  const s = qStates[q.id]?.status;
+                  return s === "approved" || s === "corrected";
+                }).length;
+                const corrected = subj.questions.filter(
+                  (q) => qStates[q.id]?.status === "corrected",
+                ).length;
+                return (
+                  <div
+                    key={subj.name}
+                    className="flex items-center justify-between"
+                  >
+                    <span className={`text-sm ${c.text}`}>
+                      {subj.icon} {subj.name}
+                    </span>
+                    <span className="text-xs text-white/50">
+                      {approved}/{subj.questions.length} approved
+                      {corrected > 0 && (
+                        <span className="text-purple-400 ml-1">
+                          ({corrected} corrected)
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => void downloadPDF()}
+                disabled={pdfDownloading}
+                className="w-full py-2.5 rounded-lg bg-gradient-to-r from-purple-500 to-cyan-500 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm transition-all flex items-center justify-center gap-2"
+              >
+                {pdfDownloading ? (
+                  <>
+                    <span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin inline-block" />
+                    Generating PDF…
+                  </>
+                ) : (
+                  <>📄 Download Solution PDF</>
+                )}
+              </button>
+              <div className="flex gap-2">
+                <a
+                  href="/demo/student"
+                  className="flex-1 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-sm transition-colors text-center"
+                >
+                  View student side →
+                </a>
+                <button
+                  onClick={() => setPhase("review")}
+                  className="flex-1 py-2.5 rounded-lg border border-white/20 text-white/60 hover:text-white hover:border-white/40 font-semibold text-sm transition-colors"
+                >
+                  Back to review
+                </button>
+              </div>
+            </div>
+            {error && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                {error}
+              </div>
+            )}
+          </motion.div>
         </div>
       </div>
     );
@@ -761,7 +1098,7 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
 
   // ─── Phase: Review ────────────────────────────────────────────────────────
 
-   return (
+  return (
     <div className="min-h-screen bg-background text-white">
       <Navbar />
       <div className="h-14" />
@@ -771,12 +1108,17 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-4">
           <div className="flex-1 min-w-0">
             <h1 className="text-sm font-semibold truncate">{dpp.title}</h1>
-            <p className="text-xs text-white/40 truncate">{dpp.target} · Class {dpp.class}<span className="hidden sm:inline"> · {uploadedFileName}</span></p>
+            <p className="text-xs text-white/40 truncate">
+              {dpp.target} · Class {dpp.class}
+              <span className="hidden sm:inline"> · {uploadedFileName}</span>
+            </p>
           </div>
           {/* Progress */}
           <div className="text-right flex-shrink-0">
             <p className="text-xs text-white/40 mb-0.5">Reviewed</p>
-            <span className={`text-sm font-bold ${reviewed === total ? "text-green-400" : "text-white"}`}>
+            <span
+              className={`text-sm font-bold ${reviewed === total ? "text-green-400" : "text-white"}`}
+            >
               {reviewed}/{total}
             </span>
           </div>
@@ -800,20 +1142,39 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
       </header>
 
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-
         {/* ── Review summary banner ── */}
         <div className="rounded-xl border border-white/10 bg-white/[0.03] px-5 py-4">
           <div className="flex flex-wrap gap-3 items-start justify-between">
             <div className="min-w-0">
-              <h2 className="text-lg font-bold text-white truncate">{dpp.title}</h2>
-              <p className="text-white/50 text-sm mt-0.5">AI parsing complete · ready for review</p>
+              <h2 className="text-lg font-bold text-white truncate">
+                {dpp.title}
+              </h2>
+              <p className="text-white/50 text-sm mt-0.5">
+                AI parsing complete · ready for review
+              </p>
             </div>
             <div className="grid grid-cols-4 sm:flex sm:gap-4 gap-x-4 gap-y-2 text-center">
               {[
                 { label: "Total", value: total, cls: "text-white" },
-                { label: "Approved", value: allQuestions().filter((q) => qStates[q.id]?.status === "approved").length, cls: "text-green-400" },
-                { label: "Corrected", value: allQuestions().filter((q) => qStates[q.id]?.status === "corrected").length, cls: "text-purple-400" },
-                { label: "Pending", value: total - reviewed, cls: "text-yellow-400" },
+                {
+                  label: "Approved",
+                  value: allQuestions().filter(
+                    (q) => qStates[q.id]?.status === "approved",
+                  ).length,
+                  cls: "text-green-400",
+                },
+                {
+                  label: "Corrected",
+                  value: allQuestions().filter(
+                    (q) => qStates[q.id]?.status === "corrected",
+                  ).length,
+                  cls: "text-purple-400",
+                },
+                {
+                  label: "Pending",
+                  value: total - reviewed,
+                  cls: "text-yellow-400",
+                },
               ].map(({ label, value, cls }) => (
                 <div key={label}>
                   <p className="text-xs text-white/40">{label}</p>
@@ -823,7 +1184,9 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
             </div>
           </div>
           <p className="text-xs text-white/30 mt-3 border-t border-white/10 pt-3">
-            Approve AI answers as-is, or upload a handwritten correction. The solution goes through our pipeline and comes back parsed — you then approve or report.
+            Approve AI answers as-is, or upload a handwritten correction. The
+            solution goes through our pipeline and comes back parsed — you then
+            approve or report.
           </p>
         </div>
 
@@ -841,14 +1204,18 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
                 key={subj.name}
                 onClick={() => setActiveSubject(i)}
                 className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-                  isActive ? `${c.bg} ${c.text} border ${c.border}` : "text-white/50 hover:text-white/70 hover:bg-white/5"
+                  isActive
+                    ? `${c.bg} ${c.text} border ${c.border}`
+                    : "text-white/50 hover:text-white/70 hover:bg-white/5"
                 }`}
               >
                 <span className="hidden sm:inline">{subj.icon}</span>
                 <span>{subj.name}</span>
-                <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                  isActive ? `${c.badge} border` : "bg-white/10 text-white/40"
-                }`}>
+                <span
+                  className={`text-xs px-1.5 py-0.5 rounded-full ${
+                    isActive ? `${c.badge} border` : "bg-white/10 text-white/40"
+                  }`}
+                >
                   {done}/{subj.questions.length}
                 </span>
               </button>
@@ -862,10 +1229,12 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
           <button
             onClick={() => {
               const pending = currentSubject.questions.filter(
-                (q) => !qStates[q.id] || qStates[q.id].status === "pending"
+                (q) => !qStates[q.id] || qStates[q.id].status === "pending",
               );
               const updates: Record<string, QuestionState> = {};
-              pending.forEach((q) => { updates[q.id] = { status: "approved" }; });
+              pending.forEach((q) => {
+                updates[q.id] = { status: "approved" };
+              });
               setQStates((prev) => ({ ...prev, ...updates }));
             }}
             className="text-xs px-3 py-1.5 rounded-lg border border-green-500/30 text-green-400 hover:bg-green-500/10 transition-colors"
@@ -912,9 +1281,13 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
             <div className="text-sm text-white/50 min-w-0">
               <span className="text-white font-medium">{reviewed}</span>
               <span className="text-white/30">/{total}</span>
-              <span className="text-white/40 ml-1 hidden xs:inline">reviewed</span>
+              <span className="text-white/40 ml-1 hidden xs:inline">
+                reviewed
+              </span>
               {reviewed < total && (
-                <span className="text-white/30 ml-1 hidden sm:inline">· {total - reviewed} pending</span>
+                <span className="text-white/30 ml-1 hidden sm:inline">
+                  · {total - reviewed} pending
+                </span>
               )}
             </div>
             <button
@@ -922,7 +1295,9 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
               disabled={reviewed === 0}
               className="flex-shrink-0 px-4 py-2 rounded-lg bg-green-500 hover:bg-green-400 disabled:opacity-30 disabled:cursor-not-allowed text-black font-semibold text-sm transition-colors"
             >
-              {reviewed < total ? `Publish (${reviewed}/${total})` : "Publish DPP 🚀"}
+              {reviewed < total
+                ? `Publish (${reviewed}/${total})`
+                : "Publish DPP 🚀"}
             </button>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { RenderingShowcase } from "@/components/sections/rendering-showcase";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -119,11 +120,31 @@ const creditPacks = [
 ];
 
 const teamUsageExample = [
-  { teacher: "Physics teacher", papers: "1 DPP/day × 26 days", questions: "~780 Q/month" },
-  { teacher: "Chemistry teacher", papers: "1 DPP/day × 26 days", questions: "~780 Q/month" },
-  { teacher: "Biology teacher", papers: "1 DPP/day × 26 days", questions: "~780 Q/month" },
-  { teacher: "Maths teacher", papers: "1 DPP/day × 26 days", questions: "~780 Q/month" },
-  { teacher: "Weekly exam (all subjects)", papers: "1 full mock/week × 4 weeks", questions: "~720 Q/month" },
+  {
+    teacher: "Physics teacher",
+    papers: "1 DPP/day × 26 days",
+    questions: "~780 Q/month",
+  },
+  {
+    teacher: "Chemistry teacher",
+    papers: "1 DPP/day × 26 days",
+    questions: "~780 Q/month",
+  },
+  {
+    teacher: "Biology teacher",
+    papers: "1 DPP/day × 26 days",
+    questions: "~780 Q/month",
+  },
+  {
+    teacher: "Maths teacher",
+    papers: "1 DPP/day × 26 days",
+    questions: "~780 Q/month",
+  },
+  {
+    teacher: "Weekly exam (all subjects)",
+    papers: "1 full mock/week × 4 weeks",
+    questions: "~720 Q/month",
+  },
 ];
 
 const vsFullPlatform = [
@@ -157,12 +178,17 @@ export default function LitePage() {
         />
         <FadeIn>
           <div className="flex items-center justify-center gap-2 mb-6">
-            <Badge variant="outline" className="font-mono text-xs tracking-widest uppercase">
+            <Badge
+              variant="outline"
+              className="font-mono text-xs tracking-widest uppercase"
+            >
               SolveFlow Lite
             </Badge>
             <Badge
               className="font-mono text-xs tracking-widest uppercase text-white border-0"
-              style={{ background: "linear-gradient(135deg, #7928ca, #00d4ff)" }}
+              style={{
+                background: "linear-gradient(135deg, #7928ca, #00d4ff)",
+              }}
             >
               PDF Export
             </Badge>
@@ -178,16 +204,20 @@ export default function LitePage() {
         </FadeIn>
         <FadeIn delay={0.2}>
           <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed mb-10">
-            Admin buys credits. Teachers upload papers, review AI solutions, export PDFs.
-            No student app. No student logins.
+            Admin buys credits. Teachers upload papers, review AI solutions,
+            export PDFs. No student app. No student logins.
           </p>
         </FadeIn>
         <FadeIn delay={0.3}>
           <div className="flex justify-center gap-8 md:gap-12 flex-wrap mb-10">
             {heroStats.map(({ value, label }) => (
               <div key={label} className="text-center">
-                <div className="text-xl md:text-2xl font-bold font-mono tracking-tight">{value}</div>
-                <div className="text-sm text-muted-foreground mt-1">{label}</div>
+                <div className="text-xl md:text-2xl font-bold font-mono tracking-tight">
+                  {value}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  {label}
+                </div>
               </div>
             ))}
           </div>
@@ -215,23 +245,34 @@ export default function LitePage() {
       {/* ── FOR WHOM ── */}
       <section className="py-14 md:py-20 px-5 max-w-3xl mx-auto">
         <FadeIn>
-          <Badge variant="outline" className="font-mono text-xs tracking-widest uppercase mb-5">
+          <Badge
+            variant="outline"
+            className="font-mono text-xs tracking-widest uppercase mb-5"
+          >
             Who is this for
           </Badge>
         </FadeIn>
         <FadeIn delay={0.1}>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-8">
             Solutions fast.{" "}
-            <span className="text-muted-foreground/40">No student platform.</span>
+            <span className="text-muted-foreground/40">
+              No student platform.
+            </span>
           </h2>
         </FadeIn>
-        <Stagger baseDelay={0} gap={0.1} className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+        <Stagger
+          baseDelay={0}
+          gap={0.1}
+          className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch"
+        >
           {forWhomItems.map(({ icon, title, desc }) => (
             <Card key={title} className="h-full flex flex-col">
               <CardContent className="p-5 flex gap-3 items-start flex-1">
                 <span className="text-xl mt-0.5 shrink-0">{icon}</span>
                 <div>
-                  <p className="text-base font-semibold leading-snug">{title}</p>
+                  <p className="text-base font-semibold leading-snug">
+                    {title}
+                  </p>
                   <p className="text-sm text-muted-foreground mt-1">{desc}</p>
                 </div>
               </CardContent>
@@ -245,14 +286,19 @@ export default function LitePage() {
       {/* ── HOW IT WORKS — TENANT FLOW ── */}
       <section className="py-14 md:py-20 px-5 max-w-3xl mx-auto">
         <FadeIn>
-          <Badge variant="outline" className="font-mono text-xs tracking-widest uppercase mb-5">
+          <Badge
+            variant="outline"
+            className="font-mono text-xs tracking-widest uppercase mb-5"
+          >
             How It Works
           </Badge>
         </FadeIn>
         <FadeIn delay={0.1}>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-10">
             Admin sets up once.{" "}
-            <span className="text-muted-foreground/40">Teachers just use it.</span>
+            <span className="text-muted-foreground/40">
+              Teachers just use it.
+            </span>
           </h2>
         </FadeIn>
 
@@ -290,14 +336,18 @@ export default function LitePage() {
                         className="text-[10px] font-bold font-mono tracking-widest uppercase px-1.5 py-0.5 rounded"
                         style={{
                           color: isAdminStep ? "#7928ca" : "#00d4ff",
-                          background: isAdminStep ? "rgba(121,40,202,0.1)" : "rgba(0,212,255,0.1)",
+                          background: isAdminStep
+                            ? "rgba(121,40,202,0.1)"
+                            : "rgba(0,212,255,0.1)",
                           border: `1px solid ${isAdminStep ? "rgba(121,40,202,0.2)" : "rgba(0,212,255,0.2)"}`,
                         }}
                       >
                         {actor}
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {desc}
+                    </p>
                   </div>
                 </div>
               </FadeIn>
@@ -314,10 +364,18 @@ export default function LitePage() {
 
       <Separator className="max-w-3xl mx-auto opacity-20" />
 
+      {/* ── RENDERING SHOWCASE ── */}
+      <RenderingShowcase />
+
+      <Separator className="max-w-3xl mx-auto opacity-20" />
+
       {/* ── TEAM USAGE EXAMPLE ── */}
       <section className="py-14 md:py-20 px-5 max-w-3xl mx-auto">
         <FadeIn>
-          <Badge variant="outline" className="font-mono text-xs tracking-widest uppercase mb-5">
+          <Badge
+            variant="outline"
+            className="font-mono text-xs tracking-widest uppercase mb-5"
+          >
             Team Usage Example
           </Badge>
         </FadeIn>
@@ -330,22 +388,40 @@ export default function LitePage() {
         <FadeIn delay={0.15}>
           <div className="rounded-xl border border-border overflow-hidden mb-6">
             <div className="grid grid-cols-[1fr_1fr_auto] bg-muted/40">
-              <div className="px-4 py-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground/60 border-r border-border">Teacher</div>
-              <div className="px-4 py-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground/60 border-r border-border">Upload pattern</div>
-              <div className="px-4 py-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground/60">Monthly use</div>
+              <div className="px-4 py-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground/60 border-r border-border">
+                Teacher
+              </div>
+              <div className="px-4 py-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground/60 border-r border-border">
+                Upload pattern
+              </div>
+              <div className="px-4 py-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground/60">
+                Monthly use
+              </div>
             </div>
             <div className="divide-y divide-border/30">
               {teamUsageExample.map(({ teacher, papers, questions }) => (
                 <div key={teacher} className="grid grid-cols-[1fr_1fr_auto]">
-                  <div className="px-4 py-3 text-sm font-medium border-r border-border/30">{teacher}</div>
-                  <div className="px-4 py-3 text-sm text-muted-foreground border-r border-border/30">{papers}</div>
-                  <div className="px-4 py-3 text-sm font-mono font-bold text-purple-400">{questions}</div>
+                  <div className="px-4 py-3 text-sm font-medium border-r border-border/30">
+                    {teacher}
+                  </div>
+                  <div className="px-4 py-3 text-sm text-muted-foreground border-r border-border/30">
+                    {papers}
+                  </div>
+                  <div className="px-4 py-3 text-sm font-mono font-bold text-purple-400">
+                    {questions}
+                  </div>
                 </div>
               ))}
               <div className="grid grid-cols-[1fr_1fr_auto] bg-muted/20">
-                <div className="px-4 py-3 text-sm font-bold border-r border-border/30">Total</div>
-                <div className="px-4 py-3 text-sm text-muted-foreground border-r border-border/30">4 teachers + weekly exam</div>
-                <div className="px-4 py-3 text-sm font-mono font-bold text-foreground">~3,840 Q/month</div>
+                <div className="px-4 py-3 text-sm font-bold border-r border-border/30">
+                  Total
+                </div>
+                <div className="px-4 py-3 text-sm text-muted-foreground border-r border-border/30">
+                  4 teachers + weekly exam
+                </div>
+                <div className="px-4 py-3 text-sm font-mono font-bold text-foreground">
+                  ~3,840 Q/month
+                </div>
               </div>
             </div>
           </div>
@@ -353,7 +429,11 @@ export default function LitePage() {
 
         <FadeIn>
           <p className="text-sm text-muted-foreground text-center">
-            The <strong className="text-foreground">Institute pack (5,000Q at ₹4/Q)</strong> covers a full month at ₹20,000 — vs ₹19,200 at base rate.
+            The{" "}
+            <strong className="text-foreground">
+              Institute pack (5,000Q at ₹4/Q)
+            </strong>{" "}
+            covers a full month at ₹20,000 — vs ₹19,200 at base rate.
           </p>
         </FadeIn>
       </section>
@@ -361,16 +441,24 @@ export default function LitePage() {
       <Separator className="max-w-3xl mx-auto opacity-20" />
 
       {/* ── PRICING ── */}
-      <section id="pricing" className="py-14 md:py-20 px-5 max-w-3xl mx-auto text-center">
+      <section
+        id="pricing"
+        className="py-14 md:py-20 px-5 max-w-3xl mx-auto text-center"
+      >
         <FadeIn>
-          <Badge variant="outline" className="font-mono text-xs tracking-widest uppercase mb-5">
+          <Badge
+            variant="outline"
+            className="font-mono text-xs tracking-widest uppercase mb-5"
+          >
             Pricing
           </Badge>
         </FadeIn>
         <FadeIn delay={0.1}>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">
             Buy credits.{" "}
-            <span className="text-muted-foreground/40">No per-teacher seats.</span>
+            <span className="text-muted-foreground/40">
+              No per-teacher seats.
+            </span>
           </h2>
         </FadeIn>
         <FadeIn delay={0.15}>
@@ -379,59 +467,97 @@ export default function LitePage() {
           </p>
         </FadeIn>
 
-        <Stagger baseDelay={0} gap={0.12} className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 text-left items-stretch">
-          {creditPacks.map(({ name, questions, price, perQ, savings, savingsTag, featured, desc, teachers }) => (
-            <div
-              key={name}
-              className="relative rounded-2xl p-6 overflow-hidden flex flex-col"
-              style={{
-                border: featured ? "1px solid rgba(121,40,202,0.35)" : "1px solid hsl(var(--border))",
-                background: featured
-                  ? "linear-gradient(180deg, rgba(121,40,202,0.06) 0%, rgba(0,212,255,0.03) 100%)"
-                  : "hsl(var(--card))",
-              }}
-            >
-              {featured && (
-                <div
-                  className="absolute top-3 right-3 text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-full text-white"
-                  style={{ background: "linear-gradient(135deg, #7928ca, #00d4ff)" }}
-                >
-                  Popular
-                </div>
-              )}
-              {savingsTag && !featured && (
-                <div className="absolute top-3 right-3 text-xs font-bold px-2.5 py-1 rounded-full text-green-400 border border-green-400/20 bg-green-400/5">
-                  {savingsTag}
-                </div>
-              )}
-              <p className="text-sm text-muted-foreground font-medium mb-1">{name}</p>
-              <div className="text-3xl md:text-4xl font-bold tracking-tight mb-1">{price}</div>
-              <p className="text-sm text-muted-foreground font-mono mb-1">{questions}</p>
-              <p
-                className="text-xs font-semibold font-mono tracking-wider"
-                style={{ color: featured ? "#a78bfa" : "hsl(var(--muted-foreground))" }}
+        <Stagger
+          baseDelay={0}
+          gap={0.12}
+          className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 text-left items-stretch"
+        >
+          {creditPacks.map(
+            ({
+              name,
+              questions,
+              price,
+              perQ,
+              savings,
+              savingsTag,
+              featured,
+              desc,
+              teachers,
+            }) => (
+              <div
+                key={name}
+                className="relative rounded-2xl p-6 overflow-hidden flex flex-col"
+                style={{
+                  border: featured
+                    ? "1px solid rgba(121,40,202,0.35)"
+                    : "1px solid hsl(var(--border))",
+                  background: featured
+                    ? "linear-gradient(180deg, rgba(121,40,202,0.06) 0%, rgba(0,212,255,0.03) 100%)"
+                    : "hsl(var(--card))",
+                }}
               >
-                {perQ}
-              </p>
-              {savings && (
-                <p className="text-xs text-green-400/80 mt-0.5">{savings}</p>
-              )}
-              <Separator className="my-3 opacity-20" />
-              <p className="text-xs text-muted-foreground mb-1">{desc}</p>
-              <p className="text-xs font-semibold" style={{ color: "#00d4ff88" }}>{teachers}</p>
-              <p className="text-xs text-muted-foreground/50 mt-1">Valid 6 months</p>
-            </div>
-          ))}
+                {featured && (
+                  <div
+                    className="absolute top-3 right-3 text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-full text-white"
+                    style={{
+                      background: "linear-gradient(135deg, #7928ca, #00d4ff)",
+                    }}
+                  >
+                    Popular
+                  </div>
+                )}
+                {savingsTag && !featured && (
+                  <div className="absolute top-3 right-3 text-xs font-bold px-2.5 py-1 rounded-full text-green-400 border border-green-400/20 bg-green-400/5">
+                    {savingsTag}
+                  </div>
+                )}
+                <p className="text-sm text-muted-foreground font-medium mb-1">
+                  {name}
+                </p>
+                <div className="text-3xl md:text-4xl font-bold tracking-tight mb-1">
+                  {price}
+                </div>
+                <p className="text-sm text-muted-foreground font-mono mb-1">
+                  {questions}
+                </p>
+                <p
+                  className="text-xs font-semibold font-mono tracking-wider"
+                  style={{
+                    color: featured
+                      ? "#a78bfa"
+                      : "hsl(var(--muted-foreground))",
+                  }}
+                >
+                  {perQ}
+                </p>
+                {savings && (
+                  <p className="text-xs text-green-400/80 mt-0.5">{savings}</p>
+                )}
+                <Separator className="my-3 opacity-20" />
+                <p className="text-xs text-muted-foreground mb-1">{desc}</p>
+                <p
+                  className="text-xs font-semibold"
+                  style={{ color: "#00d4ff88" }}
+                >
+                  {teachers}
+                </p>
+                <p className="text-xs text-muted-foreground/50 mt-1">
+                  Valid 6 months
+                </p>
+              </div>
+            ),
+          )}
         </Stagger>
 
         <FadeIn>
           <p className="text-sm text-muted-foreground/70 leading-relaxed">
-            No subscription · No per-seat fee · PCM / PCB · Credits valid 6 months ·{" "}
-            <span className="text-foreground font-semibold">First 100Q free</span>
+            No subscription · No per-seat fee · PCM / PCB · Credits valid 6
+            months ·{" "}
+            <span className="text-foreground font-semibold">
+              First 100Q free
+            </span>
           </p>
         </FadeIn>
-
-
       </section>
 
       <Separator className="max-w-3xl mx-auto opacity-20" />
@@ -439,7 +565,10 @@ export default function LitePage() {
       {/* ── LITE VS FULL PLATFORM ── */}
       <section className="py-14 md:py-20 px-5 max-w-3xl mx-auto">
         <FadeIn>
-          <Badge variant="outline" className="font-mono text-xs tracking-widest uppercase mb-5">
+          <Badge
+            variant="outline"
+            className="font-mono text-xs tracking-widest uppercase mb-5"
+          >
             Lite vs Full Platform
           </Badge>
         </FadeIn>
@@ -456,13 +585,19 @@ export default function LitePage() {
             <div className="px-2 pb-2 text-center text-cyan-400/70">Full</div>
           </div>
         </FadeIn>
-        <Stagger baseDelay={0.15} gap={0.06} className="border border-border rounded-xl overflow-hidden mb-8">
+        <Stagger
+          baseDelay={0.15}
+          gap={0.06}
+          className="border border-border rounded-xl overflow-hidden mb-8"
+        >
           {vsFullPlatform.map(({ feature, lite, full }, i) => (
             <div
               key={feature}
               className={`grid grid-cols-[1fr_80px_80px] ${i < vsFullPlatform.length - 1 ? "border-b border-border/30" : ""}`}
             >
-              <div className="px-4 py-3 text-sm text-muted-foreground border-r border-border/30">{feature}</div>
+              <div className="px-4 py-3 text-sm text-muted-foreground border-r border-border/30">
+                {feature}
+              </div>
               <div className="px-2 py-3 flex items-center justify-center border-r border-border/30">
                 {lite ? (
                   <span className="text-purple-400 font-bold text-base">✓</span>
@@ -483,7 +618,8 @@ export default function LitePage() {
 
         <FadeIn>
           <p className="text-sm text-muted-foreground text-center">
-            You can upgrade to the full platform at any time — content and teacher history carry over.
+            You can upgrade to the full platform at any time — content and
+            teacher history carry over.
           </p>
         </FadeIn>
       </section>
@@ -532,7 +668,10 @@ export default function LitePage() {
         <FadeIn delay={0.25}>
           <p className="text-xs text-muted-foreground/50 mt-5">
             Want the full platform with student access and analytics?{" "}
-            <a href="/" className="text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2">
+            <a
+              href="/"
+              className="text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+            >
               See SolveFlow
             </a>
           </p>
