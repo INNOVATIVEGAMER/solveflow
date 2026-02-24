@@ -13,7 +13,12 @@
 import { FunctionCallingConfigMode, GoogleGenAI, Type } from "@google/genai";
 
 import { DPP_TOOL } from "../schema";
-import type { ILLMProvider, LLMProviderConfig, PDFGenerationOptions, ToolCallResult } from "../types";
+import type {
+  ILLMProvider,
+  LLMProviderConfig,
+  PDFGenerationOptions,
+  ToolCallResult,
+} from "../types";
 import { DPPGenerationError, LLMProviderType } from "../types";
 import { SYSTEM_PROMPT } from "../prompts";
 
@@ -122,7 +127,7 @@ export class GeminiProvider implements ILLMProvider {
     if (!apiKey) {
       throw new DPPGenerationError(
         "Gemini API key is required. Provide via config.apiKey or the LLM_API_KEY environment variable.",
-        { provider: "gemini" }
+        { provider: "gemini" },
       );
     }
 
@@ -137,14 +142,14 @@ export class GeminiProvider implements ILLMProvider {
 
   async generateFromPDF<T>(
     pdfBase64: string,
-    options: PDFGenerationOptions = {}
+    options: PDFGenerationOptions = {},
   ): Promise<ToolCallResult<T>> {
     const maxTokens = options.maxTokens ?? this.config.defaultMaxTokens;
     const systemPrompt = options.systemPrompt ?? SYSTEM_PROMPT;
 
     // Convert the DPP JSON Schema to Gemini's proprietary format
     const geminiSchema = convertToGeminiSchema(
-      DPP_TOOL.input_schema as AnySchema
+      DPP_TOOL.input_schema as AnySchema,
     );
 
     const functionDeclaration = {
@@ -191,7 +196,7 @@ export class GeminiProvider implements ILLMProvider {
       if (attempt > 0) {
         const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt - 1);
         console.warn(
-          `[GeminiProvider] Rate limited — retrying in ${delay}ms (attempt ${attempt}/${DEFAULT_MAX_RETRIES})`
+          `[GeminiProvider] Rate limited — retrying in ${delay}ms (attempt ${attempt}/${DEFAULT_MAX_RETRIES})`,
         );
         await new Promise((res) => setTimeout(res, delay));
       }
@@ -203,8 +208,8 @@ export class GeminiProvider implements ILLMProvider {
           reject(
             new DPPGenerationError(
               `Gemini request timed out after ${this.config.timeoutMs}ms`,
-              { provider: "gemini", timeoutMs: this.config.timeoutMs }
-            )
+              { provider: "gemini", timeoutMs: this.config.timeoutMs },
+            ),
           );
         }, this.config.timeoutMs);
       });
@@ -223,14 +228,14 @@ export class GeminiProvider implements ILLMProvider {
               model: this.config.model,
               finishReason: candidate?.finishReason,
               candidateCount: response.candidates?.length ?? 0,
-            }
+            },
           );
         }
 
         if (functionCall.name !== DPP_TOOL.name) {
           throw new DPPGenerationError(
             `Tool calling failed: unexpected function name "${functionCall.name}"`,
-            { provider: "gemini", model: this.config.model }
+            { provider: "gemini", model: this.config.model },
           );
         }
 
@@ -265,7 +270,7 @@ export class GeminiProvider implements ILLMProvider {
             // Auth errors are never retryable
             throw new DPPGenerationError(
               "Gemini authentication failed: invalid or missing API key",
-              { provider: "gemini" }
+              { provider: "gemini" },
             );
           }
 
@@ -307,7 +312,7 @@ export class GeminiProvider implements ILLMProvider {
       lastError instanceof Error ? lastError.message : String(lastError);
     throw new DPPGenerationError(
       `Gemini rate limit exceeded after ${DEFAULT_MAX_RETRIES} retries — please try again later`,
-      { provider: "gemini", lastError: exhaustedMsg }
+      { provider: "gemini", lastError: exhaustedMsg },
     );
   }
 }
