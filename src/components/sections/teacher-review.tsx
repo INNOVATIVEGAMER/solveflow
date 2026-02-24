@@ -354,6 +354,7 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [activeSubject, setActiveSubject] = useState(0);
   const [pdfDownloading, setPdfDownloading] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
 
   // Per-question state keyed by question id
   const [qStates, setQStates] = useState<Record<string, QuestionState>>({});
@@ -365,8 +366,9 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
   // Interval ref for fake progress animation during real API call
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Real PDF upload — calls /api/parse-dpp ──
+  // ── PDF upload — routes to demo or real API based on demoMode ──
   async function handlePDFUpload(file: File) {
+    if (demoMode) { await startDemoShortcut(); return; }
     setError(null);
     setUploadedFileName(file.name);
     setPhase("processing");
@@ -413,31 +415,45 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
     }
   }
 
-  // ── Demo shortcut — loads /demo/dpp.json directly (no API key needed) ──
+  // ── Demo shortcut — loads /demo/dpp.json but mimics a ~25 s processing animation ──
   async function startDemoShortcut() {
     setUploadedFileName("NEET_DPP_1_Class12.pdf");
     setPhase("processing");
     setUploadProgress(0);
 
+    // Fetch data immediately in the background — it's instant
+    let fetchedData: DppData | null = null;
+    let fetchError = false;
+    fetch("/demo/dpp.json")
+      .then((r) => r.json() as Promise<DppData>)
+      .then((d) => { fetchedData = d; })
+      .catch(() => { fetchError = true; });
+
+    // Crawl 0 → 95 over ~25 s (263 ms per 1 %)
+    const DEMO_DURATION_MS = 25_000;
+    const STEPS = 95;
+    const stepMs = Math.round(DEMO_DURATION_MS / STEPS);
+
     const interval = setInterval(() => {
       setUploadProgress((p) => {
-        if (p >= 95) { clearInterval(interval); return 95; }
-        return p + 2;
+        if (p >= STEPS) { clearInterval(interval); return STEPS; }
+        return p + 1;
       });
-    }, 80);
+    }, stepMs);
 
-    try {
-      const response = await fetch("/demo/dpp.json");
-      const data = await response.json() as DppData;
-      clearInterval(interval);
-      setDpp(data);
-      setUploadProgress(100);
-      setTimeout(() => setPhase("review"), 400);
-    } catch {
-      clearInterval(interval);
+    // After the full duration, resolve regardless of fetch (it'll be done long before)
+    await new Promise<void>((resolve) => setTimeout(resolve, DEMO_DURATION_MS));
+    clearInterval(interval);
+
+    if (fetchError || !fetchedData) {
       setError("Failed to load demo data.");
       setPhase("upload");
+      return;
     }
+
+    setDpp(fetchedData);
+    setUploadProgress(100);
+    setTimeout(() => setPhase("review"), 400);
   }
 
   // ── Per-question pipeline simulation ──
@@ -538,7 +554,43 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
     return (
       <div className="min-h-screen bg-background text-white">
         <Navbar />
+
+        {/* ── Demo controls bar — sits below fixed navbar ── */}
         <div className="h-14" />
+        <div className="bg-white/[0.03] border-b border-white/10">
+          <div className="max-w-2xl mx-auto px-4 py-2 flex items-center gap-3 flex-wrap">
+            <span className="text-xs text-white/30 font-medium uppercase tracking-wider">Demo controls</span>
+
+            {/* Demo mode toggle */}
+            <button
+              onClick={() => setDemoMode((v) => !v)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
+                demoMode
+                  ? "border-yellow-500/50 bg-yellow-500/15 text-yellow-400"
+                  : "border-white/15 bg-white/5 text-white/50 hover:border-white/30 hover:text-white/70"
+              }`}
+            >
+              <span
+                className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                  demoMode ? "border-yellow-400 bg-yellow-400" : "border-white/30"
+                }`}
+              >
+                {demoMode && (
+                  <svg viewBox="0 0 8 8" className="w-2 h-2 text-black" fill="currentColor">
+                    <path d="M1 4l2 2 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                  </svg>
+                )}
+              </span>
+              Demo mode
+            </button>
+
+            <span className="text-xs text-white/25 hidden sm:inline">
+              {demoMode
+                ? "Upload is bypassed — pre-loaded DPP data will be used instantly"
+                : "Upload will call the real AI pipeline"}
+            </span>
+          </div>
+        </div>
 
         <div className="max-w-2xl mx-auto px-4 py-12 space-y-8">
           {/* Step indicators */}
@@ -560,24 +612,39 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
           <div>
             <h2 className="text-xl font-bold text-white mb-1">Upload DPP Sheet</h2>
             <p className="text-white/50 text-sm mb-6">
-              Upload the PDF of your Daily Practice Paper. Our AI pipeline will parse all questions and generate detailed solutions automatically.
+              {demoMode
+                ? "Demo mode is on — drop any PDF or click the button below to load pre-built demo data instantly."
+                : "Upload the PDF of your Daily Practice Paper. Our AI pipeline will parse all questions and generate detailed solutions automatically."}
             </p>
 
             <div
-              className="rounded-2xl border-2 border-dashed border-white/20 hover:border-cyan-500/50 bg-white/[0.02] hover:bg-cyan-500/5 transition-all cursor-pointer p-6 sm:p-12 text-center"
-              onClick={() => pdfInputRef.current?.click()}
+              className={`rounded-2xl border-2 border-dashed transition-all cursor-pointer p-6 sm:p-12 text-center ${
+                demoMode
+                  ? "border-yellow-500/40 hover:border-yellow-400/60 bg-yellow-500/[0.03] hover:bg-yellow-500/[0.06]"
+                  : "border-white/20 hover:border-cyan-500/50 bg-white/[0.02] hover:bg-cyan-500/5"
+              }`}
+              onClick={() => demoMode ? void startDemoShortcut() : pdfInputRef.current?.click()}
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
                 e.preventDefault();
+                if (demoMode) { void startDemoShortcut(); return; }
                 const file = e.dataTransfer.files[0];
                 if (file) void handlePDFUpload(file);
               }}
             >
-              <div className="text-4xl mb-3">📄</div>
-              <p className="text-white font-semibold mb-1">Drop your DPP PDF here</p>
-              <p className="text-white/40 text-sm mb-4">or click to browse</p>
-              <button className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-sm transition-colors">
-                Browse PDF
+              <div className="text-4xl mb-3">{demoMode ? "⚡" : "📄"}</div>
+              <p className="text-white font-semibold mb-1">
+                {demoMode ? "Click to load demo DPP" : "Drop your DPP PDF here"}
+              </p>
+              <p className="text-white/40 text-sm mb-4">
+                {demoMode ? "No API key needed — uses pre-built data" : "or click to browse"}
+              </p>
+              <button className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
+                demoMode
+                  ? "bg-yellow-500 hover:bg-yellow-400 text-black"
+                  : "bg-cyan-500 hover:bg-cyan-400 text-black"
+              }`}>
+                {demoMode ? "Load Demo Data" : "Browse PDF"}
               </button>
               <input
                 ref={pdfInputRef}
@@ -593,7 +660,7 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
             </div>
 
             <p className="text-center mt-4 text-xs text-white/30">
-              Supported: PDF only · Max 50 MB · Multi-page supported
+              {demoMode ? "Demo mode active — real AI pipeline is bypassed" : "Supported: PDF only · Max 50 MB · Multi-page supported"}
             </p>
           </div>
 
