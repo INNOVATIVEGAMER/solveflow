@@ -429,8 +429,8 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
       .then((d) => { fetchedData = d; })
       .catch(() => { fetchError = true; });
 
-    // Crawl 0 → 95 over ~25 s (263 ms per 1 %)
-    const DEMO_DURATION_MS = 25_000;
+    // Crawl 0 → 95 over ~7 s (74 ms per 1 %)
+    const DEMO_DURATION_MS = 7_000;
     const STEPS = 95;
     const stepMs = Math.round(DEMO_DURATION_MS / STEPS);
 
