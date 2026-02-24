@@ -688,6 +688,34 @@ export default function Home() {
             </CardContent>
           </Card>
         </FadeIn>
+
+        {/* SolveFlow Lite teaser */}
+        <FadeIn>
+          <a
+            href="/lite"
+            className="group block max-w-lg mx-auto mb-5 rounded-2xl p-5 text-left transition-colors duration-200"
+            style={{
+              border: "1px solid rgba(121,40,202,0.2)",
+              background: "linear-gradient(135deg, rgba(121,40,202,0.04) 0%, rgba(0,212,255,0.02) 100%)",
+            }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold font-mono tracking-widest uppercase text-purple-400 mb-1">
+                  SolveFlow Lite
+                </p>
+                <p className="text-sm text-foreground font-semibold mb-1">
+                  Solutions as PDFs — no student platform needed
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Admin buys a shared credit pack. Teachers upload papers, review solutions, export PDFs.
+                  Pay per question (₹3/Q). No student app, no mobile logins.
+                </p>
+              </div>
+              <span className="text-purple-400 text-lg mt-0.5 shrink-0 group-hover:translate-x-0.5 transition-transform">↗</span>
+            </div>
+          </a>
+        </FadeIn>
         <FadeIn>
           <p className="text-sm text-muted-foreground/70 leading-relaxed">
             Unlimited uploads · All subjects (PCM / PCB) · Full analytics · Priority support · No contracts · No setup fees

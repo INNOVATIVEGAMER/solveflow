@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MathMarkdown from "@/components/shared/math-markdown";
 import { Navbar } from "@/components/layout/navbar";
@@ -33,7 +33,7 @@ interface QuestionState {
   parseProgress?: number;       // 0-100 fake progress
 }
 
-interface TeacherReviewProps { initialData: DppData | null; }
+interface TeacherReviewProps { initialData?: DppData | null; }
 
 // ─── Pipeline stages copy ─────────────────────────────────────────────────────
 
@@ -347,8 +347,7 @@ function QuestionReviewCard({
 type PagePhase = "upload" | "processing" | "review" | "published";
 
 export default function TeacherReview({ initialData }: TeacherReviewProps) {
-  const [dpp, setDpp] = useState<DppData | null>(initialData);
-  const [loading, setLoading] = useState(!initialData);
+  const [dpp, setDpp] = useState<DppData | null>(initialData ?? null);
   const [error, setError] = useState<string | null>(null);
 
   const [phase, setPhase] = useState<PagePhase>("upload");
@@ -358,36 +357,86 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
   // Per-question state keyed by question id
   const [qStates, setQStates] = useState<Record<string, QuestionState>>({});
 
-  // Fake PDF upload file name
+  // Uploaded PDF file name (shown in processing + review phases)
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
 
-  // Client-side fetch fallback
-  useEffect(() => {
-    if (!dpp) {
-      fetch("/demo/dpp.json")
-        .then((r) => r.json())
-        .then((data) => { setDpp(data); setLoading(false); })
-        .catch(() => { setError("Failed to load demo data."); setLoading(false); });
-    }
-  }, [dpp]);
+  // Interval ref for fake progress animation during real API call
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Fake upload pipeline simulation ──
-  function startFakeUpload(fileName: string) {
-    setUploadedFileName(fileName);
+  // ── Real PDF upload — calls /api/parse-dpp ──
+  async function handlePDFUpload(file: File) {
+    setError(null);
+    setUploadedFileName(file.name);
+    setPhase("processing");
+    setUploadProgress(0);
+
+    // Fake progress: crawl from 0 → 85 while the API call is in flight
+    progressIntervalRef.current = setInterval(() => {
+      setUploadProgress((p) => {
+        if (p >= 85) {
+          clearInterval(progressIntervalRef.current!);
+          progressIntervalRef.current = null;
+          return 85;
+        }
+        return p + 1;
+      });
+    }, 300);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("/api/parse-dpp", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error((errorData as { error?: string }).error ?? `Server error: ${response.status}`);
+      }
+
+      const { dpp: parsedDpp } = await response.json() as { dpp: DppData };
+      clearInterval(progressIntervalRef.current!);
+      progressIntervalRef.current = null;
+      setDpp(parsedDpp);
+      setUploadProgress(100);
+      setTimeout(() => setPhase("review"), 400);
+    } catch (err) {
+      clearInterval(progressIntervalRef.current!);
+      progressIntervalRef.current = null;
+      const message = err instanceof Error ? err.message : "Failed to process PDF";
+      setError(message);
+      setPhase("upload");
+    }
+  }
+
+  // ── Demo shortcut — loads /demo/dpp.json directly (no API key needed) ──
+  async function startDemoShortcut() {
+    setUploadedFileName("NEET_DPP_1_Class12.pdf");
     setPhase("processing");
     setUploadProgress(0);
 
     const interval = setInterval(() => {
       setUploadProgress((p) => {
-        if (p >= 100) {
-          clearInterval(interval);
-          setTimeout(() => setPhase("review"), 400);
-          return 100;
-        }
+        if (p >= 95) { clearInterval(interval); return 95; }
         return p + 2;
       });
-    }, 80); // ~4 seconds total
+    }, 80);
+
+    try {
+      const response = await fetch("/demo/dpp.json");
+      const data = await response.json() as DppData;
+      clearInterval(interval);
+      setDpp(data);
+      setUploadProgress(100);
+      setTimeout(() => setPhase("review"), 400);
+    } catch {
+      clearInterval(interval);
+      setError("Failed to load demo data.");
+      setPhase("upload");
+    }
   }
 
   // ── Per-question pipeline simulation ──
@@ -453,29 +502,8 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
     }).length;
   }
 
-  // ─── Loading / error ──
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-  if (error || !dpp) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-red-400 text-sm">{error ?? "Something went wrong."}</p>
-      </div>
-    );
-  }
-
-  const total = allQuestions().length;
-  const reviewed = reviewedCount();
-  const currentSubject = dpp.subjects[activeSubject];
-  const colors = colorMap[currentSubject.color] ?? colorMap.cyan;
-
   // ─── Phase: Upload ────────────────────────────────────────────────────────
+  // Rendered before dpp is loaded; dpp is only required in review/published.
 
   if (phase === "upload") {
     return (
@@ -513,7 +541,7 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
               onDrop={(e) => {
                 e.preventDefault();
                 const file = e.dataTransfer.files[0];
-                if (file) startFakeUpload(file.name);
+                if (file) void handlePDFUpload(file);
               }}
             >
               <div className="text-4xl mb-3">📄</div>
@@ -529,7 +557,7 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (file) startFakeUpload(file.name);
+                  if (file) void handlePDFUpload(file);
                   e.target.value = "";
                 }}
               />
@@ -567,12 +595,19 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
               <p className="text-xs text-white/40">Skip the upload — jump straight to the review stage with pre-loaded data.</p>
             </div>
             <button
-              onClick={() => startFakeUpload("NEET_DPP_1_Class12.pdf")}
+              onClick={() => void startDemoShortcut()}
               className="flex-shrink-0 px-3 py-1.5 rounded-lg border border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 text-xs font-semibold transition-colors"
             >
               Skip to review →
             </button>
           </div>
+
+          {/* Error toast */}
+          {error && (
+            <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              {error}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -650,6 +685,22 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
       </div>
     );
   }
+
+  // ─── Guard: dpp must be loaded before review / published phases ──────────
+
+  if (!dpp) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-red-400 text-sm">Something went wrong.</p>
+      </div>
+    );
+  }
+
+  // These variables are safe to compute now that dpp is guaranteed non-null
+  const total = allQuestions().length;
+  const reviewed = reviewedCount();
+  const currentSubject = dpp.subjects[activeSubject];
+  const colors = colorMap[currentSubject.color] ?? colorMap.cyan;
 
   // ─── Phase: Published ────────────────────────────────────────────────────
 
