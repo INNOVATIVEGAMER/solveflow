@@ -24,6 +24,8 @@ import { SYSTEM_PROMPT } from "../prompts";
 const DEFAULT_MODEL = "gemini-2.0-flash";
 const DEFAULT_MAX_TOKENS = 8192;
 const DEFAULT_TIMEOUT_MS = 120_000; // 2 minutes
+const DEFAULT_MAX_RETRIES = 3;
+const RETRY_BASE_DELAY_MS = 2_000; // 2 s, doubles each attempt
 
 // ---------------------------------------------------------------------------
 // Schema conversion: JSON Schema → Gemini function declaration schema
@@ -151,7 +153,7 @@ export class GeminiProvider implements ILLMProvider {
       parameters: geminiSchema,
     };
 
-    const generatePromise = this.client.models.generateContent({
+    const requestConfig = {
       model: this.config.model,
       contents: [
         {
@@ -181,109 +183,131 @@ export class GeminiProvider implements ILLMProvider {
           },
         },
       },
-    });
+    };
 
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => {
-        reject(
-          new DPPGenerationError(
-            `Gemini request timed out after ${this.config.timeoutMs}ms`,
-            { provider: "gemini", timeoutMs: this.config.timeoutMs }
-          )
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt <= DEFAULT_MAX_RETRIES; attempt++) {
+      if (attempt > 0) {
+        const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt - 1);
+        console.warn(
+          `[GeminiProvider] Rate limited — retrying in ${delay}ms (attempt ${attempt}/${DEFAULT_MAX_RETRIES})`
         );
-      }, this.config.timeoutMs);
-    });
-
-    try {
-      const response = await Promise.race([generatePromise, timeoutPromise]);
-
-      const candidate = response.candidates?.[0];
-      const functionCall = candidate?.content?.parts?.[0]?.functionCall;
-
-      if (!functionCall) {
-        throw new DPPGenerationError(
-          "Tool calling failed: no function call in Gemini response",
-          {
-            provider: "gemini",
-            model: this.config.model,
-            finishReason: candidate?.finishReason,
-            candidateCount: response.candidates?.length ?? 0,
-          }
-        );
+        await new Promise((res) => setTimeout(res, delay));
       }
 
-      if (functionCall.name !== DPP_TOOL.name) {
-        throw new DPPGenerationError(
-          `Tool calling failed: unexpected function name "${functionCall.name}"`,
-          { provider: "gemini", model: this.config.model }
-        );
-      }
+      // Create fresh promises for each attempt
+      const generatePromise = this.client.models.generateContent(requestConfig);
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(
+            new DPPGenerationError(
+              `Gemini request timed out after ${this.config.timeoutMs}ms`,
+              { provider: "gemini", timeoutMs: this.config.timeoutMs }
+            )
+          );
+        }, this.config.timeoutMs);
+      });
 
-      const usageMetadata = response.usageMetadata;
+      try {
+        const response = await Promise.race([generatePromise, timeoutPromise]);
 
-      return {
-        data: functionCall.args as T,
-        usage: usageMetadata
-          ? {
-              inputTokens: usageMetadata.promptTokenCount ?? 0,
-              outputTokens: usageMetadata.candidatesTokenCount ?? 0,
+        const candidate = response.candidates?.[0];
+        const functionCall = candidate?.content?.parts?.[0]?.functionCall;
+
+        if (!functionCall) {
+          throw new DPPGenerationError(
+            "Tool calling failed: no function call in Gemini response",
+            {
+              provider: "gemini",
+              model: this.config.model,
+              finishReason: candidate?.finishReason,
+              candidateCount: response.candidates?.length ?? 0,
             }
-          : undefined,
-        model: this.config.model,
-      };
-    } catch (error) {
-      // Re-throw errors we already own
-      if (error instanceof DPPGenerationError) {
-        throw error;
-      }
-
-      if (error instanceof Error) {
-        const message = error.message.toLowerCase();
-        console.error("[GeminiProvider] API error:", error.message);
-
-        if (
-          message.includes("401") ||
-          message.includes("403") ||
-          message.includes("api key") ||
-          message.includes("invalid")
-        ) {
-          throw new DPPGenerationError(
-            "Gemini authentication failed: invalid or missing API key",
-            { provider: "gemini" }
           );
         }
 
-        if (
-          message.includes("429") ||
-          message.includes("rate limit") ||
-          message.includes("quota")
-        ) {
+        if (functionCall.name !== DPP_TOOL.name) {
           throw new DPPGenerationError(
-            "Gemini rate limit exceeded — please retry later",
-            { provider: "gemini" }
+            `Tool calling failed: unexpected function name "${functionCall.name}"`,
+            { provider: "gemini", model: this.config.model }
           );
         }
 
-        if (
-          message.includes("500") ||
-          message.includes("503") ||
-          message.includes("unavailable")
-        ) {
-          throw new DPPGenerationError(
-            "Gemini service unavailable — please retry later",
-            { provider: "gemini" }
-          );
+        const usageMetadata = response.usageMetadata;
+
+        return {
+          data: functionCall.args as T,
+          usage: usageMetadata
+            ? {
+                inputTokens: usageMetadata.promptTokenCount ?? 0,
+                outputTokens: usageMetadata.candidatesTokenCount ?? 0,
+              }
+            : undefined,
+          model: this.config.model,
+        };
+      } catch (error) {
+        // Re-throw errors we already own (non-retryable)
+        if (error instanceof DPPGenerationError) {
+          throw error;
         }
 
-        throw new DPPGenerationError(`Gemini API error: ${error.message}`, {
+        if (error instanceof Error) {
+          const message = error.message.toLowerCase();
+          console.error("[GeminiProvider] API error:", error.message);
+
+          if (
+            message.includes("401") ||
+            message.includes("403") ||
+            message.includes("api key") ||
+            message.includes("invalid")
+          ) {
+            // Auth errors are never retryable
+            throw new DPPGenerationError(
+              "Gemini authentication failed: invalid or missing API key",
+              { provider: "gemini" }
+            );
+          }
+
+          if (
+            message.includes("429") ||
+            message.includes("rate limit") ||
+            message.includes("quota") ||
+            message.includes("resource exhausted")
+          ) {
+            // Save and retry on next iteration
+            lastError = error;
+            continue;
+          }
+
+          if (
+            message.includes("500") ||
+            message.includes("503") ||
+            message.includes("unavailable")
+          ) {
+            // Transient server errors — also worth retrying
+            lastError = error;
+            continue;
+          }
+
+          throw new DPPGenerationError(`Gemini API error: ${error.message}`, {
+            provider: "gemini",
+          });
+        }
+
+        console.error("[GeminiProvider] Unknown error:", error);
+        throw new DPPGenerationError("An unexpected error occurred", {
           provider: "gemini",
         });
       }
-
-      console.error("[GeminiProvider] Unknown error:", error);
-      throw new DPPGenerationError("An unexpected error occurred", {
-        provider: "gemini",
-      });
     }
+
+    // All retries exhausted
+    const exhaustedMsg =
+      lastError instanceof Error ? lastError.message : String(lastError);
+    throw new DPPGenerationError(
+      `Gemini rate limit exceeded after ${DEFAULT_MAX_RETRIES} retries — please try again later`,
+      { provider: "gemini", lastError: exhaustedMsg }
+    );
   }
 }
