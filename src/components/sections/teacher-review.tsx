@@ -353,6 +353,7 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
   const [phase, setPhase] = useState<PagePhase>("upload");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [activeSubject, setActiveSubject] = useState(0);
+  const [pdfDownloading, setPdfDownloading] = useState(false);
 
   // Per-question state keyed by question id
   const [qStates, setQStates] = useState<Record<string, QuestionState>>({});
@@ -484,6 +485,34 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
       ...prev,
       [qId]: { ...prev[qId], status: "reported" },
     }));
+  }
+
+  async function downloadPDF() {
+    if (!dpp || pdfDownloading) return;
+    setPdfDownloading(true);
+    try {
+      const response = await fetch("/api/generate-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dpp }),
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({})) as { error?: string };
+        throw new Error(err.error ?? `PDF generation failed (${response.status})`);
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${dpp.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to generate PDF";
+      setError(msg);
+    } finally {
+      setPdfDownloading(false);
+    }
   }
 
   function handlePublish() {
@@ -739,20 +768,41 @@ export default function TeacherReview({ initialData }: TeacherReviewProps) {
               );
             })}
           </div>
-          <div className="flex gap-3">
-            <a
-              href="/demo/student"
-              className="flex-1 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-sm transition-colors text-center"
-            >
-              View student side →
-            </a>
+          <div className="flex flex-col gap-2">
             <button
-              onClick={() => setPhase("review")}
-              className="flex-1 py-2.5 rounded-lg border border-white/20 text-white/60 hover:text-white hover:border-white/40 font-semibold text-sm transition-colors"
+              onClick={() => void downloadPDF()}
+              disabled={pdfDownloading}
+              className="w-full py-2.5 rounded-lg bg-gradient-to-r from-purple-500 to-cyan-500 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm transition-all flex items-center justify-center gap-2"
             >
-              Back to review
+              {pdfDownloading ? (
+                <>
+                  <span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin inline-block" />
+                  Generating PDF…
+                </>
+              ) : (
+                <>📄 Download Solution PDF</>
+              )}
             </button>
+            <div className="flex gap-2">
+              <a
+                href="/demo/student"
+                className="flex-1 py-2.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-sm transition-colors text-center"
+              >
+                View student side →
+              </a>
+              <button
+                onClick={() => setPhase("review")}
+                className="flex-1 py-2.5 rounded-lg border border-white/20 text-white/60 hover:text-white hover:border-white/40 font-semibold text-sm transition-colors"
+              >
+                Back to review
+              </button>
+            </div>
           </div>
+          {error && (
+            <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              {error}
+            </div>
+          )}
         </motion.div>
         </div>
       </div>
