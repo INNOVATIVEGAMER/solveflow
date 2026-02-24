@@ -243,12 +243,12 @@ export default function Home() {
         </FadeIn>
         <FadeIn delay={0.1}>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">
-            Teachers&apos; best hours{" "}
-            <span className="text-muted-foreground/40">deserve better than grading MCQs.</span>
+            2 hours. 30 students.{" "}
+            <span className="text-muted-foreground/40">One repeated doubt.</span>
           </h2>
         </FadeIn>
         <FadeIn delay={0.15}>
-          <p className="text-base text-muted-foreground mb-6">Those 2 hours every evening could be spent on:</p>
+          <p className="text-base text-muted-foreground mb-6">Every evening, teachers field the same DPP doubts from 30 different students. That time could go toward:</p>
         </FadeIn>
         <Stagger baseDelay={0} gap={0.1} className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
           {hiddenCostItems.map(({ icon, title, sub }) => (

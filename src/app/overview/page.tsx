@@ -362,8 +362,8 @@ function SlideThree() {
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.5, delay: 0.08 }}
       >
-        Teachers&apos; best hours{" "}
-        <span className="text-muted-foreground/30">deserve better than grading MCQs.</span>
+        2 hours. 30 students.{" "}
+        <span className="text-muted-foreground/30">One repeated doubt.</span>
       </motion.h2>
 
       <motion.p
@@ -372,7 +372,7 @@ function SlideThree() {
         animate={inView ? { opacity: 1 } : {}}
         transition={{ duration: 0.5, delay: 0.15 }}
       >
-        Those 2 hours every evening could be spent on:
+        Every evening, teachers field the same DPP doubts from 30 different students. That time could go toward:
       </motion.p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
