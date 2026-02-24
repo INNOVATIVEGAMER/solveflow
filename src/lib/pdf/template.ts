@@ -43,6 +43,89 @@ function escapeTypst(text: string): string {
     .replace(/\]/g, "\\]");   // ] → \]  (Typst content delimiter)
 }
 
+// ── Convert LaTeX environments to Typst equivalents ──────────────────────────
+// Must run BEFORE individual command replacements since \begin{...}...\end{...}
+// patterns would otherwise be mangled by the catch-all regex cleanup.
+
+function convertLatexEnvironments(latex: string): string {
+  // ── Matrix environments → Typst mat() ──
+  // pmatrix=(), bmatrix=[], Bmatrix={}, vmatrix=|x|, Vmatrix=||x||, matrix=none
+  const matrixEnvs: [string, string][] = [
+    ['pmatrix', ''],                    // parens (Typst default)
+    ['bmatrix', 'delim: "[", '],        // square brackets
+    ['Bmatrix', 'delim: "{", '],        // curly braces
+    ['vmatrix', 'delim: "|", '],        // single vertical bars
+    ['Vmatrix', 'delim: "||", '],       // double vertical bars
+    ['matrix', 'delim: #none, '],       // no delimiters
+    ['smallmatrix', 'delim: #none, '],  // no delimiters (small)
+  ];
+
+  for (const [env, delimArg] of matrixEnvs) {
+    const re = new RegExp(
+      `\\\\begin\\{${env}\\}([\\s\\S]*?)\\\\end\\{${env}\\}`,
+      'g'
+    );
+    latex = latex.replace(re, (_: string, body: string) => {
+      const rows = body
+        .split(/\\\\/)
+        .map((r: string) => r.trim())
+        .filter((r: string) => r.length > 0)
+        .map((r: string) =>
+          r.split('&').map((c: string) => c.trim()).join(', ')
+        );
+      return `mat(${delimArg}${rows.join('; ')})`;
+    });
+  }
+
+  // ── array environment → Typst mat() (strip column spec like {cc}) ──
+  latex = latex.replace(
+    /\\begin\{array\}\{[^}]*\}([\s\S]*?)\\end\{array\}/g,
+    (_: string, body: string) => {
+      const rows = body
+        .split(/\\\\/)
+        .map((r: string) => r.trim())
+        .filter((r: string) => r.length > 0)
+        .map((r: string) =>
+          r.split('&').map((c: string) => c.trim()).join(', ')
+        );
+      return `mat(delim: #none, ${rows.join('; ')})`;
+    }
+  );
+
+  // ── cases → Typst cases() ──
+  latex = latex.replace(
+    /\\begin\{cases\}([\s\S]*?)\\end\{cases\}/g,
+    (_: string, body: string) => {
+      const entries = body
+        .split(/\\\\/)
+        .map((r: string) => r.trim())
+        .filter((r: string) => r.length > 0)
+        .map((r: string) => r.replace(/&/g, ' ').trim());
+      return `cases(${entries.join(', ')})`;
+    }
+  );
+
+  // ── aligned / align / align* / gathered / gather → join with Typst line breaks ──
+  latex = latex.replace(
+    /\\begin\{(aligned?|align\*|gather(?:ed)?)\}([\s\S]*?)\\end\{\1\}/g,
+    (_: string, _env: string, body: string) => {
+      return body
+        .split(/\\\\/)
+        .map((line: string) => line.replace(/&/g, ' ').trim())
+        .filter((line: string) => line.length > 0)
+        .join(' \\ ');
+    }
+  );
+
+  // ── equation / equation* → just the inner content ──
+  latex = latex.replace(
+    /\\begin\{equation\*?\}([\s\S]*?)\\end\{equation\*?\}/g,
+    '$1'
+  );
+
+  return latex;
+}
+
 // ── Convert markdown+LaTeX math text to Typst markup ─────────────────────────
 // The DPP JSON uses:
 //   - $...$ for inline math (LaTeX)
@@ -52,11 +135,26 @@ function escapeTypst(text: string): string {
 // Typst uses $...$ for inline math and $ ... $ (with spaces or newline) for display.
 // LaTeX math commands need translating to Typst math syntax.
 
+// Regex fragment: content inside braces allowing one level of nesting
+const NB = '(?:[^{}]|\\{[^{}]*\\})*';
+
 function latexMathToTypst(latex: string): string {
+  // ── Phase 1: Convert \begin{...}...\end{...} environments ──
+  latex = convertLatexEnvironments(latex);
+
+  // ── Phase 2: Iteratively convert \frac / \binom (handles nesting) ──
+  const fracRe = new RegExp(`\\\\d?frac\\{(${NB})\\}\\{(${NB})\\}`, 'g');
+  const binomRe = new RegExp(`\\\\d?binom\\{(${NB})\\}\\{(${NB})\\}`, 'g');
+  let prev: string;
+  do {
+    prev = latex;
+    latex = latex
+      .replace(fracRe, "frac($1, $2)")
+      .replace(binomRe, "binom($1, $2)");
+  } while (latex !== prev);
+
+  // ── Phase 3: All other command-level replacements ──
   return latex
-    // Fractions — use Typst's frac() function for reliable rendering
-    .replace(/\\dfrac\{([^{}]*)\}\{([^{}]*)\}/g, "frac($1, $2)")
-    .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, "frac($1, $2)")
     // Text in math
     .replace(/\\text\{([^{}]*)\}/g, "\"$1\"")
     .replace(/\\textbf\{([^{}]*)\}/g, "bold(\"$1\")")
@@ -86,55 +184,89 @@ function latexMathToTypst(latex: string): string {
     .replace(/\\times/g, "times").replace(/\\cdot/g, "dot.op")
     .replace(/\\pm/g, "plus.minus").replace(/\\mp/g, "minus.plus")
     .replace(/\\leq/g, "<=").replace(/\\geq/g, ">=")
-    .replace(/\\neq/g, "!=").replace(/\\approx/g, "approx")
+    .replace(/\\le(?![a-zA-Z])/g, "<=").replace(/\\ge(?![a-zA-Z])/g, ">=")
+    .replace(/\\neq/g, "!=").replace(/\\ne(?![a-zA-Z])/g, "!=")
+    .replace(/\\approx/g, "approx")
+    .replace(/\\equiv/g, "equiv")
+    .replace(/\\sim(?![a-zA-Z])/g, "tilde.op")
+    .replace(/\\cong/g, "tilde.equiv")
+    .replace(/\\ll/g, "lt.double").replace(/\\gg/g, "gt.double")
     .replace(/\\infty/g, "infinity")
     .replace(/\\propto/g, "prop")
     .replace(/\\therefore/g, "therefore")
     .replace(/\\because/g, "because")
     .replace(/\\forall/g, "forall")
     .replace(/\\exists/g, "exists")
-    .replace(/\\in/g, "in")
+    .replace(/\\in(?![a-zA-Z])/g, "in")
     .replace(/\\notin/g, "in.not")
-    .replace(/\\subset/g, "subset")
+    .replace(/\\subset/g, "subset").replace(/\\supset/g, "supset")
+    .replace(/\\subseteq/g, "subset.eq").replace(/\\supseteq/g, "supset.eq")
     .replace(/\\cup/g, "union")
     .replace(/\\cap/g, "sect")
+    .replace(/\\emptyset/g, "nothing")
+    .replace(/\\oplus/g, "plus.circle").replace(/\\otimes/g, "times.circle")
     .replace(/\\perp/g, "perp")
     .replace(/\\parallel/g, "parallel")
+    .replace(/\\angle/g, "angle")
+    .replace(/\\triangle/g, "triangle.t")
+    // Dots
+    .replace(/\\ldots/g, "dots").replace(/\\cdots/g, "dots.c")
+    .replace(/\\vdots/g, "dots.v").replace(/\\ddots/g, "dots.down")
     // Trig & log functions — Typst math has these natively without backslash
+    .replace(/\\det/g, "det")
     .replace(/\\sin/g, "sin").replace(/\\cos/g, "cos").replace(/\\tan/g, "tan")
-    .replace(/\\sin/g, "sin").replace(/\\cot/g, "cot").replace(/\\sec/g, "sec")
+    .replace(/\\cot/g, "cot").replace(/\\sec/g, "sec").replace(/\\csc/g, "csc")
     .replace(/\\arcsin/g, "arcsin").replace(/\\arccos/g, "arccos").replace(/\\arctan/g, "arctan")
     .replace(/\\ln/g, "ln").replace(/\\log/g, "log").replace(/\\exp/g, "exp")
     .replace(/\\max/g, "max").replace(/\\min/g, "min")
-    .replace(/\\lim/g, "lim").replace(/\\sup/g, "sup").replace(/\\inf/g, "inf")
-    .replace(/\\sqrt\{([^{}]*)\}/g, "sqrt($1)")
-    .replace(/\\sqrt\[([^\]]*)\]\{([^{}]*)\}/g, "root($1, $2)")
+    .replace(/\\lim/g, "lim").replace(/\\sup(?![a-zA-Z])/g, "sup").replace(/\\inf(?![a-zA-Z])/g, "inf")
+    .replace(/\\gcd/g, "gcd").replace(/\\dim/g, "dim")
+    .replace(/\\ker/g, "ker").replace(/\\hom/g, "hom").replace(/\\deg/g, "deg")
+    .replace(new RegExp(`\\\\sqrt\\[([^\\]]*)\\]\\{(${NB})\\}`, 'g'), "root($1, $2)")
+    .replace(new RegExp(`\\\\sqrt\\{(${NB})\\}`, 'g'), "sqrt($1)")
     .replace(/\\sum/g, "sum").replace(/\\prod/g, "product")
-    .replace(/\\int/g, "integral").replace(/\\oint/g, "integral.cont")
+    .replace(/\\int(?![a-zA-Z])/g, "integral").replace(/\\oint/g, "integral.cont")
+    .replace(/\\iint/g, "integral.double").replace(/\\iiint/g, "integral.triple")
     .replace(/\\partial/g, "diff").replace(/\\nabla/g, "nabla")
-    .replace(/\\vec\{([^{}]*)\}/g, "arrow($1)")
-    .replace(/\\hat\{([^{}]*)\}/g, "hat($1)")
-    .replace(/\\bar\{([^{}]*)\}/g, "overline($1)")
-    .replace(/\\tilde\{([^{}]*)\}/g, "tilde($1)")
-    .replace(/\\dot\{([^{}]*)\}/g, "dot($1)")
-    .replace(/\\ddot\{([^{}]*)\}/g, "dot.double($1)")
+    .replace(new RegExp(`\\\\vec\\{(${NB})\\}`, 'g'), "arrow($1)")
+    .replace(new RegExp(`\\\\hat\\{(${NB})\\}`, 'g'), "hat($1)")
+    .replace(new RegExp(`\\\\bar\\{(${NB})\\}`, 'g'), "overline($1)")
+    .replace(new RegExp(`\\\\tilde\\{(${NB})\\}`, 'g'), "tilde($1)")
+    .replace(new RegExp(`\\\\dot\\{(${NB})\\}`, 'g'), "dot($1)")
+    .replace(new RegExp(`\\\\ddot\\{(${NB})\\}`, 'g'), "dot.double($1)")
+    .replace(new RegExp(`\\\\underline\\{(${NB})\\}`, 'g'), "underline($1)")
+    .replace(new RegExp(`\\\\overline\\{(${NB})\\}`, 'g'), "overline($1)")
+    // Font styles in math
+    .replace(/\\mathbb\{([^{}]*)\}/g, "bb($1)")
+    .replace(/\\mathcal\{([^{}]*)\}/g, "cal($1)")
+    .replace(/\\mathrm\{([^{}]*)\}/g, "upright($1)")
+    .replace(/\\mathbf\{([^{}]*)\}/g, "bold($1)")
+    .replace(/\\operatorname\{([^{}]*)\}/g, "\"$1\"")
     // Arrows
+    .replace(/\\iff/g, "<==>")
+    .replace(/\\implies/g, "==>").replace(/\\impliedby/g, "<==")
     .replace(/\\rightarrow/g, "->").replace(/\\leftarrow/g, "<-")
     .replace(/\\leftrightarrow/g, "<->")
     .replace(/\\Rightarrow/g, "=>").replace(/\\Leftarrow/g, "<=")
     .replace(/\\longrightarrow/g, "-->")
     .replace(/\\rightleftharpoons/g, "harpoons.rltb")
-    // Spacing (just remove in Typst math)
+    .replace(/\\to(?![a-zA-Z])/g, "->")
+    .replace(/\\mapsto/g, "|->")
+    // Spacing
     .replace(/\\quad/g, "quad").replace(/\\qquad/g, "wide")
     .replace(/\\,/g, "thin").replace(/\\;/g, "med")
     .replace(/\\ /g, "space")
     // Boxes — Typst doesn't have boxed() in math; use a styled block
-    .replace(/\\boxed\{([^{}]*)\}/g, "underline(overline($1))")
+    .replace(new RegExp(`\\\\boxed\\{(${NB})\\}`, 'g'), "underline(overline($1))")
     // Superscript / subscript — Typst math accepts ^{...} and _{...} natively
     // No conversion needed; leave as-is
     // Chemical/bio specific — \circ used for degrees/standard state
     .replace(/\\circ/g, "degree")
     .replace(/\\degree/g, "degree")
+    // Left/right delimiter sizing — strip the command, keep the delimiter
+    .replace(/\\left\s*/g, "").replace(/\\right\s*/g, "")
+    // Literal braces: \{ and \} → Typst math braces
+    .replace(/\\\{/g, "{").replace(/\\\}/g, "}")
     // Remove remaining unknown LaTeX commands gracefully
     .replace(/\\[a-zA-Z]+\{([^{}]*)\}/g, "$1")
     .replace(/\\[a-zA-Z]+/g, "");
@@ -148,17 +280,27 @@ function spacifyMathIdents(math: string): string {
   // Known multi-char Typst math identifiers to leave alone
   const knownIdents = new Set([
     "frac","sqrt","root","sum","product","integral","integral.cont",
+    "integral.double","integral.triple",
     "times","approx","infinity","alpha","beta","gamma","delta","epsilon",
     "epsilon.alt","zeta","eta","theta","theta.alt","iota","kappa","lambda",
     "mu","nu","xi","pi","pi.alt","rho","sigma","tau","upsilon","phi",
     "phi.alt","chi","psi","omega","Gamma","Delta","Theta","Lambda","Xi",
     "Pi","Sigma","Upsilon","Phi","Psi","Omega","dot.op","plus.minus",
     "minus.plus","prop","therefore","because","forall","exists","in",
-    "in.not","subset","union","sect","perp","parallel","sin","cos","tan",
-    "cot","sec","arcsin","arccos","arctan","ln","log","exp","max","min",
-    "lim","sup","inf","harpoons.rltb","diff","nabla","bold","arrow","hat",
-    "overline","tilde","dot","dot.double","degree","boxed","wide","quad",
+    "in.not","subset","supset","subset.eq","supset.eq","union","sect",
+    "nothing","plus.circle","times.circle",
+    "perp","parallel","angle","triangle.t",
+    "dots","dots.c","dots.v","dots.down",
+    "sin","cos","tan","cot","sec","csc",
+    "arcsin","arccos","arctan","ln","log","exp","max","min",
+    "lim","sup","inf","det","gcd","dim","ker","hom","deg",
+    "harpoons.rltb","diff","nabla","bold","arrow","hat",
+    "overline","underline","tilde","tilde.op","tilde.equiv",
+    "dot","dot.double","degree","boxed","wide","quad",
     "thin","med","space","zws","attach","quad","wide","forall",
+    "equiv","lt.double","gt.double",
+    // Typst mat/cases/binom + named args from environment conversion
+    "mat","delim","cases","binom","bb","cal","upright","lr","none",
   ]);
 
   // Tokenize: split on word boundaries, operators, numbers, parens
