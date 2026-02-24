@@ -96,6 +96,14 @@ export function Navbar({ variant = "full" }: NavbarProps) {
             Overview
           </Link>
 
+          {/* SolveFlow Lite link */}
+          <Link
+            href="/lite"
+            className="px-3 py-1.5 text-sm font-medium transition-colors rounded-md text-purple-400 hover:text-purple-300 hover:bg-purple-500/8"
+          >
+            Lite
+          </Link>
+
           {/* Demo dropdown */}
           <div ref={dropdownRef} className="relative">
             <button
@@ -199,6 +207,14 @@ export function Navbar({ variant = "full" }: NavbarProps) {
               className="flex items-center px-3 py-3 rounded-lg text-base text-white/70 hover:text-white hover:bg-white/5 transition-colors font-medium"
             >
               Overview
+            </Link>
+
+            <Link
+              href="/lite"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center px-3 py-3 rounded-lg text-base text-purple-400 hover:text-purple-300 hover:bg-purple-500/8 transition-colors font-medium"
+            >
+              SolveFlow Lite
             </Link>
 
             {/* Demo section */}
