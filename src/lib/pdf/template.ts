@@ -38,7 +38,9 @@ function escapeTypst(text: string): string {
     .replace(/\\/g, "\\\\")   // \ → \\  (but we handle math separately)
     .replace(/@/g, "\\@")
     .replace(/</g, "\\<")
-    .replace(/>/g, "\\>");
+    .replace(/>/g, "\\>")
+    .replace(/\[/g, "\\[")    // [ → \[  (Typst content delimiter)
+    .replace(/\]/g, "\\]");   // ] → \]  (Typst content delimiter)
 }
 
 // ── Convert markdown+LaTeX math text to Typst markup ─────────────────────────
@@ -235,7 +237,9 @@ function toTypstContent(text: string): string {
       // Escape Typst specials in plain segments
       plain = plain
         .replace(/#/g, "\\#")
-        .replace(/@/g, "\\@");
+        .replace(/@/g, "\\@")
+        .replace(/\[/g, "\\[")   // [ → \[  (Typst content delimiter)
+        .replace(/\]/g, "\\]");  // ] → \]  (Typst content delimiter)
       parts.push(plain);
     }
   }
