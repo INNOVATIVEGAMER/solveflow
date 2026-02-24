@@ -362,8 +362,8 @@ function SlideThree() {
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.5, delay: 0.08 }}
       >
-        You&apos;re paying teacher salaries{" "}
-        <span className="text-muted-foreground/30">for work that doesn&apos;t need a teacher.</span>
+        Teachers&apos; best hours{" "}
+        <span className="text-muted-foreground/30">deserve better than grading MCQs.</span>
       </motion.h2>
 
       <motion.p

@@ -243,8 +243,8 @@ export default function Home() {
         </FadeIn>
         <FadeIn delay={0.1}>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">
-            You&apos;re paying teacher salaries{" "}
-            <span className="text-muted-foreground/40">for work that doesn&apos;t need a teacher.</span>
+            Teachers&apos; best hours{" "}
+            <span className="text-muted-foreground/40">deserve better than grading MCQs.</span>
           </h2>
         </FadeIn>
         <FadeIn delay={0.15}>
