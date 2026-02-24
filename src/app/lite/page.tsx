@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { RenderingShowcase } from "@/components/sections/rendering-showcase";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -311,6 +312,11 @@ export default function LitePage() {
           </p>
         </FadeIn>
       </section>
+
+      <Separator className="max-w-3xl mx-auto opacity-20" />
+
+      {/* ── RENDERING SHOWCASE ── */}
+      <RenderingShowcase />
 
       <Separator className="max-w-3xl mx-auto opacity-20" />
 
